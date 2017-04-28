@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -30,21 +31,24 @@ namespace bvmfscrapper.scrappers
             };
 
             string url = $"{BASE_URL}{LIST_URL}BuscaEmpresaListada.aspx?idioma=pt-br";
-            var client = new System.Net.Http.HttpClient();
+            var client = new HttpClient();
             var response = await client.PostDataAsync(url, payload);
             var companies = ParseCompanies(response);
 
             watch.Stop();
             Console.WriteLine($"{companies.Count} companhias encontradas em {watch.Elapsed.TotalSeconds} segundos");
 
-            foreach (var c in companies)
+           
+            foreach (var c in companies.Take(1))
             {
-                fillCompanyData(c);
+                await fillCompanyData(c);
+                await getFinancialInfoReferences(c);
             }
 
             return companies;
         }
 
+        
         private static List<Company> ParseCompanies(string html)
         {
             var doc = new HtmlAgilityPack.HtmlDocument();
@@ -100,7 +104,7 @@ namespace bvmfscrapper.scrappers
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(html);
 
-            var rows = doc.QuerySelectorAll("div.rows");
+            var rows = doc.QuerySelectorAll("div.row");
 
             // first row is last update datetime
             var p = rows[0].QuerySelector("p.legenda");
@@ -146,10 +150,34 @@ namespace bvmfscrapper.scrappers
             // count 5 positions backwards
             // parse hour
             i = text.LastIndexOfNum();
-            var timepart = text.Substring(i - 5, 5);
+            var timepart = text.Substring(i - 4, 5);
 
             var datetime = DateTime.ParseExact($"{datepart} {timepart}", DATETIME_MASK, new CultureInfo("pt-BR"));
             return datetime;
+
+        }
+
+        private static async Task getFinancialInfoReferences(Company c)
+        {
+            Console.WriteLine("Obtendo referências das informações financeiras");
+
+
+            // link: finacial reports
+            // http://bvmf.bmfbovespa.com.br/cias-listadas/empresas-listadas/ResumoDemonstrativosFinanceiros.aspx?codigoCvm=21903&idioma=pt-br
+            // __EVENTTARGET = ctl00$contentPlaceHolderConteudo$cmbAno
+            // ctl00$contentPlaceHolderConteudo$cmbAno = 2009
+            var client = new HttpClient();
+            var payload = new Dictionary<string, string>
+            {
+                { "__EVENTTARGET", "ctl00$contentPlaceHolderConteudo$cmbAno" }
+            };
+
+            var url = $"{BASE_URL}{LIST_URL}ResumoDemonstrativosFinanceiros.aspx?codigoCvm={c.CodigoCVM}&idioma=pt-br";
+
+            var response = await client.PostDataAsync(url, payload);
+
+            // load years
+
 
         }
     }

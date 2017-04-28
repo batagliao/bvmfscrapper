@@ -15,6 +15,10 @@ namespace bvmfscrapper
 
         public static int LastIndexOfNum(this string s, int startindex = 0)
         {
+            if(startindex == 0)
+            {
+                startindex = s.Length - 1;
+            }
             return s.LastIndexOfAny(NUMS, startindex);
         }
     }
