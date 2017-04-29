@@ -1,5 +1,4 @@
 ﻿using bvmfscrapper.models;
-using HtmlAgilityPack.CssSelectors.NetCore;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +8,10 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using AngleSharp.Parser.Html;
+using AngleSharp.Dom;
+using AngleSharp;
 
 namespace bvmfscrapper.scrappers
 {
@@ -19,8 +22,7 @@ namespace bvmfscrapper.scrappers
         const string LIST_URL = "cias-listadas/empresas-listadas/";
         const string SEGMENTO_MERCADO_BALCAO = "MB";
         const string DATETIME_MASK = @"dd/MM/yyyy HH\hmm";
-
-        public async static Task<List<Company>> GetCompanies()
+        public static async Task<List<Company>> GetCompanies()
         {
             Console.WriteLine("Obtendo companhias listadas");
             var watch = Stopwatch.StartNew();
@@ -38,11 +40,29 @@ namespace bvmfscrapper.scrappers
             watch.Stop();
             Console.WriteLine($"{companies.Count} companhias encontradas em {watch.Elapsed.TotalSeconds} segundos");
 
-           
+
             foreach (var c in companies.Take(1))
             {
-                await fillCompanyData(c);
-                await getFinancialInfoReferences(c);
+                await FillCompanyData(c);
+                await GetFinancialInfoReferences(c);
+
+                // ITR - Informaçõe Trimestrais                
+                // DFP - Demostrações Financeiras Padronizadas (Pré 2010; Pós 2010)
+                // Formulário de Referência
+                // Formulário Cadastral
+                // Informações Anuais
+
+
+                // aba Informações relevantes
+                // aba Eventos Corporativos
+                // - proventos em dinheiro
+                // - proventos em ativos
+                // - subscrição
+                // - grupamento
+                // - desdobramento
+
+                // Históricos de cotações
+
             }
 
             return companies;
@@ -51,19 +71,20 @@ namespace bvmfscrapper.scrappers
         
         private static List<Company> ParseCompanies(string html)
         {
-            var doc = new HtmlAgilityPack.HtmlDocument();
-            doc.LoadHtml(html);
+            var parser = new HtmlParser();
+            var doc = parser.Parse(html);
+            //doc.LoadHtml(html);
 
             List<Company> companies = new List<Company>();
 
             var nodes = doc.QuerySelectorAll("tr.GridRow_SiteBmfBovespa, tr.GridAltRow_SiteBmfBovespa");
             foreach (var node in nodes)
             {
-                var tds = node.ChildNodes.Where(n => n.Name == "td").ToArray();
-                var href = tds.First().FirstChild.Attributes["href"].Value.Trim();
-                var razao = tds.First().InnerText.Trim();
-                var nomepregao = tds[1].InnerText.Trim();
-                var segmento = tds[2].InnerText.Trim();
+                var tds = node.ChildNodes.Where(n => n.NodeName.ToLowerInvariant() == "td").ToArray();
+                var href = ((IElement)tds[0].FirstChild).Attributes["href"].Value.Trim();
+                var razao = tds[0].TextContent.Trim();
+                var nomepregao = tds[1].TextContent.Trim();
+                var segmento = tds[2].TextContent.Trim();
 
                 if (segmento != SEGMENTO_MERCADO_BALCAO)
                 {
@@ -71,7 +92,7 @@ namespace bvmfscrapper.scrappers
                     company.RazaoSocial = razao;
                     company.NomePregao = nomepregao;
                     company.Segmento = segmento;
-                    company.CodigoCVM = getCodigoCVM(href);
+                    company.CodigoCVM = GetCodigoCvm(href);
                     companies.Add(company);
                 }
             }
@@ -79,66 +100,67 @@ namespace bvmfscrapper.scrappers
             return companies;
         }
 
-        private static int getCodigoCVM(string href)
+        private static int GetCodigoCvm(string href)
         {
-            var index = href.IndexOf("=");
+            var index = href.IndexOf("=", StringComparison.Ordinal);
             return Convert.ToInt32(href.Substring(index + 1));
         }
 
-        private static async Task fillCompanyData(Company c)
+        private static async Task FillCompanyData(Company c)
         {
             Console.WriteLine($"Obtendo informações básicas de {c.RazaoSocial}");
             var watch = Stopwatch.StartNew();
 
             var url = $"{BASE_URL}/pt-br/mercados/acoes/empresas/ExecutaAcaoConsultaInfoEmp.asp?CodCVM={c.CodigoCVM}&ViewDoc=0";
-            var client = new System.Net.Http.HttpClient();
+            var client = new HttpClient();
             var response = await client.GetStringAsync(url);
 
-            parseBasicData(response, c);
+            ParseBasicData(response, c);
             watch.Stop();
             Console.WriteLine($"dados obtidos em {watch.Elapsed.TotalSeconds} segundos");
         }
 
-        private static void parseBasicData(string html, Company c)
+        private static void ParseBasicData(string html, Company c)
         {
-            var doc = new HtmlAgilityPack.HtmlDocument();
-            doc.LoadHtml(html);
+            var parser = new HtmlParser();
+            var doc = parser.Parse(html);
+            //doc.LoadHtml(html);
 
             var rows = doc.QuerySelectorAll("div.row");
 
             // first row is last update datetime
             var p = rows[0].QuerySelector("p.legenda");
             // text = Atualizado em 28/04/2017, às 05h13
-            var date = getDate(p.InnerText.Trim());
+            var date = GetDate(p.TextContent.Trim());
             c.UltimaAtualizacao = date;
 
             // second row is basic company data
             var tableficha = rows[1].QuerySelector("table.ficha");
-            var trs = tableficha.ChildNodes.Where(n => n.Name == "tr").ToArray();
+            var trs = tableficha.ChildNodes[1].ChildNodes.Where(n => n.NodeName.ToLowerInvariant() == "tr").OfType<IElement>().ToArray();
 
             // ignore first TR, we already have this info 
-            var anchors = trs[1].QuerySelectorAll("td").Last().QuerySelectorAll("a.LinkCodNeg").Select(n => n.InnerText);
+            var anchors = trs[1].QuerySelectorAll("td").Last().QuerySelectorAll("a.LinkCodNeg").Select(n => n.TextContent);
             c.CodigosNegociacao = new SortedSet<string>(anchors);
 
-            var cnpj = trs[2].QuerySelectorAll("td").Last().InnerText.Trim();
+            var cnpj = trs[2].QuerySelectorAll("td").Last().TextContent.Trim();
             c.CNPJ = cnpj;
 
-            var mainActivity = trs[3].QuerySelectorAll("td").Last().InnerText.Trim();
+            var mainActivity = trs[3].QuerySelectorAll("td").Last().TextContent.Trim();
             if (!string.IsNullOrWhiteSpace(mainActivity))
             {
                 c.AtividadePrincipal = mainActivity.Split('/');
             }
 
-            var setorialClassfications = trs[4].QuerySelectorAll("td").Last().InnerText.Trim();
+            var setorialClassfications = trs[4].QuerySelectorAll("td").Last().TextContent.Trim();
             if (!string.IsNullOrWhiteSpace(setorialClassfications))
             {
                 c.ClassificacaoSetorial = setorialClassfications.Split('/');
             }
 
-            c.Site = trs[5].QuerySelectorAll("td").Last().InnerText.Trim();
+            c.Site = trs[5].QuerySelectorAll("td").Last().TextContent.Trim();
         }
 
-        private static DateTime getDate(string text)
+        private static DateTime GetDate(string text)
         {
             // find first num that appears on string
             // count 10 positions
@@ -157,7 +179,7 @@ namespace bvmfscrapper.scrappers
 
         }
 
-        private static async Task getFinancialInfoReferences(Company c)
+        private static async Task GetFinancialInfoReferences(Company c)
         {
             Console.WriteLine("Obtendo referências das informações financeiras");
 
@@ -165,6 +187,7 @@ namespace bvmfscrapper.scrappers
             // link: finacial reports
             // http://bvmf.bmfbovespa.com.br/cias-listadas/empresas-listadas/ResumoDemonstrativosFinanceiros.aspx?codigoCvm=21903&idioma=pt-br
             // __EVENTTARGET = ctl00$contentPlaceHolderConteudo$cmbAno
+            // __VIEWSTATE
             // ctl00$contentPlaceHolderConteudo$cmbAno = 2009
             var client = new HttpClient();
             var payload = new Dictionary<string, string>
@@ -174,11 +197,47 @@ namespace bvmfscrapper.scrappers
 
             var url = $"{BASE_URL}{LIST_URL}ResumoDemonstrativosFinanceiros.aspx?codigoCvm={c.CodigoCVM}&idioma=pt-br";
 
-            var response = await client.PostDataAsync(url, payload);
+            var response = await client.GetStringAsync(url);
 
             // load years
+            var viewstate = "";
+            var years = ParseYears(response, out viewstate).ToList();
 
+        }
 
+        private static List<int> ParseYears(string html, out string viewstate)
+        {
+            
+            var parser = new HtmlParser();
+            var doc = parser.Parse(html);
+            //doc.LoadHtml(html);            
+
+            // TODO: need to sabe the viewstate of this page
+            // to be able to change the year
+
+            viewstate = "";
+            var vselement = doc.QuerySelector("#__VIEWSTATE");
+            if(vselement != null){
+                var value = vselement.Attributes["value"].Value;
+                viewstate = value;
+            }
+
+            List<int> years = new List<int>();
+
+            var dropdown = doc.QuerySelector("select");
+            var options = dropdown.ChildNodes.OfType<IElement>();
+            foreach (var o in options)
+            {
+                var value = o.Attributes["value"].Value;
+                if(value == "0")
+                {
+                    continue;
+                }
+                //Console.WriteLine($"year = {value}");
+                years.Add(Convert.ToInt32(value));                
+            }
+            years.Sort();
+            return years;
         }
     }
 }
