@@ -18,8 +18,8 @@ namespace bvmfscrapper.scrappers
 
     public class BvmfScrapper
     {
-        const string BASE_URL = "http://bvmf.bmfbovespa.com.br/";
-        const string LIST_URL = "cias-listadas/empresas-listadas/";
+        public const string BASE_URL = "http://bvmf.bmfbovespa.com.br/";
+        public const string LIST_URL = "cias-listadas/empresas-listadas/";
         const string SEGMENTO_MERCADO_BALCAO = "MB";
         const string DATETIME_MASK = @"dd/MM/yyyy HH\hmm";
         public static async Task<List<Company>> GetCompanies()
@@ -44,7 +44,7 @@ namespace bvmfscrapper.scrappers
             foreach (var c in companies.Take(1))
             {
                 await FillCompanyData(c);
-                await GetFinancialInfoReferences(c);
+                await BvmfFinsummaryScrapper.GetFinancialInfoReferences(c);
 
                 // ITR - Informaçõe Trimestrais                
                 // DFP - Demostrações Financeiras Padronizadas (Pré 2010; Pós 2010)
@@ -179,65 +179,6 @@ namespace bvmfscrapper.scrappers
 
         }
 
-        private static async Task GetFinancialInfoReferences(Company c)
-        {
-            Console.WriteLine("Obtendo referências das informações financeiras");
-
-
-            // link: finacial reports
-            // http://bvmf.bmfbovespa.com.br/cias-listadas/empresas-listadas/ResumoDemonstrativosFinanceiros.aspx?codigoCvm=21903&idioma=pt-br
-            // __EVENTTARGET = ctl00$contentPlaceHolderConteudo$cmbAno
-            // __VIEWSTATE
-            // ctl00$contentPlaceHolderConteudo$cmbAno = 2009
-            var client = new HttpClient();
-            var payload = new Dictionary<string, string>
-            {
-                { "__EVENTTARGET", "ctl00$contentPlaceHolderConteudo$cmbAno" }
-            };
-
-            var url = $"{BASE_URL}{LIST_URL}ResumoDemonstrativosFinanceiros.aspx?codigoCvm={c.CodigoCVM}&idioma=pt-br";
-
-            var response = await client.GetStringAsync(url);
-
-            // load years
-            var viewstate = "";
-            var years = ParseYears(response, out viewstate).ToList();
-
-        }
-
-        private static List<int> ParseYears(string html, out string viewstate)
-        {
-            
-            var parser = new HtmlParser();
-            var doc = parser.Parse(html);
-            //doc.LoadHtml(html);            
-
-            // TODO: need to sabe the viewstate of this page
-            // to be able to change the year
-
-            viewstate = "";
-            var vselement = doc.QuerySelector("#__VIEWSTATE");
-            if(vselement != null){
-                var value = vselement.Attributes["value"].Value;
-                viewstate = value;
-            }
-
-            List<int> years = new List<int>();
-
-            var dropdown = doc.QuerySelector("select");
-            var options = dropdown.ChildNodes.OfType<IElement>();
-            foreach (var o in options)
-            {
-                var value = o.Attributes["value"].Value;
-                if(value == "0")
-                {
-                    continue;
-                }
-                //Console.WriteLine($"year = {value}");
-                years.Add(Convert.ToInt32(value));                
-            }
-            years.Sort();
-            return years;
-        }
+        
     }
 }
