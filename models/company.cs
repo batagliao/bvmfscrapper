@@ -16,5 +16,6 @@ namespace bvmfscrapper.models
         public string Site { get; set; }
         public SortedSet<string> CodigosNegociacao { get; set; }
         public DateTime UltimaAtualizacao { get; set; }
+        public Dictionary<DocInfoType, List<DocLinkInfo>> DocLinks { get; internal set; }
     }
 }

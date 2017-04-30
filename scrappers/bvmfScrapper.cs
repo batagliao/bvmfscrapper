@@ -12,6 +12,8 @@ using System.Xml.Linq;
 using AngleSharp.Parser.Html;
 using AngleSharp.Dom;
 using AngleSharp;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace bvmfscrapper.scrappers
 {
@@ -43,15 +45,15 @@ namespace bvmfscrapper.scrappers
 
             foreach (var c in companies.Take(1))
             {
+                // TODO: verify if file exists
+                // TODO: verify if it is up to date
+                                
                 await FillCompanyData(c);
-                await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
+                c.DocLinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
 
-                // ITR - Informaçõe Trimestrais                
-                // DFP - Demostrações Financeiras Padronizadas (Pré 2010; Pós 2010)
-                // Formulário de Referência
-                // Formulário Cadastral
-                // Informações Anuais
-
+                // save file
+                SaveFile(c);
+                
 
                 // aba Informações relevantes
                 // aba Eventos Corporativos
@@ -68,7 +70,14 @@ namespace bvmfscrapper.scrappers
             return companies;
         }
 
-        
+        private static void SaveFile(Company c)
+        {
+            string path = $@"output\basicdata\{c.CodigoCVM}.json";
+            Console.WriteLine("Salvando arquivo");
+            string json = JsonConvert.SerializeObject(c);
+            File.WriteAllText(path, json);
+        }
+
         private static List<Company> ParseCompanies(string html)
         {
             var parser = new HtmlParser();
@@ -89,9 +98,9 @@ namespace bvmfscrapper.scrappers
                 if (segmento != SEGMENTO_MERCADO_BALCAO)
                 {
                     var company = new Company();
-                    company.RazaoSocial = razao;
-                    company.NomePregao = nomepregao;
-                    company.Segmento = segmento;
+                    company.RazaoSocial = razao.Trim();
+                    company.NomePregao = nomepregao.Trim();
+                    company.Segmento = segmento.Trim();
                     company.CodigoCVM = GetCodigoCvm(href);
                     companies.Add(company);
                 }
@@ -148,13 +157,15 @@ namespace bvmfscrapper.scrappers
             var mainActivity = trs[3].QuerySelectorAll("td").Last().TextContent.Trim();
             if (!string.IsNullOrWhiteSpace(mainActivity))
             {
-                c.AtividadePrincipal = mainActivity.Split('/');
+                c.AtividadePrincipal = (from item in mainActivity.Split('/')
+                                       select item.Trim()).ToArray();
             }
 
             var setorialClassfications = trs[4].QuerySelectorAll("td").Last().TextContent.Trim();
             if (!string.IsNullOrWhiteSpace(setorialClassfications))
             {
-                c.ClassificacaoSetorial = setorialClassfications.Split('/');
+                c.ClassificacaoSetorial = (from item in setorialClassfications.Split('/')
+                                           select item.Trim()).ToArray();
             }
 
             c.Site = trs[5].QuerySelectorAll("td").Last().TextContent.Trim();

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom;
+using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using bvmfscrapper.models;
 
@@ -13,7 +14,7 @@ namespace bvmfscrapper.scrappers
     public class BvmfDocSummaryScrapper
     {
 
-        public static async Task GetDocsInfoReferences(Company c)
+        public static async Task<Dictionary<DocInfoType, List<DocLinkInfo>>> GetDocsInfoReferences(Company c)
         {
             Console.WriteLine("Obtendo links para históricos de documentos");
 
@@ -28,21 +29,28 @@ namespace bvmfscrapper.scrappers
 
             var response = await client.GetStringAsync(url);
 
-            //var sectionsLinks = GetSectionHistoricLinks(response);
+            var docLinks = new Dictionary<DocInfoType, List<DocLinkInfo>>();
 
             // informações trimestrais            
-            await GetDocumentsLinks(DocInfoType.ITR, c);
+            var itrs = await GetDocumentsLinks(DocInfoType.ITR, c);
+            docLinks.Add(DocInfoType.ITR, itrs);
             // demonstrações financeiras padronizadas
-            await GetDocumentsLinks(DocInfoType.DFP, c);
+            var dfps = await GetDocumentsLinks(DocInfoType.DFP, c);
+            docLinks.Add(DocInfoType.DFP, dfps);
             // Formulário de Referência
-            await GetDocumentsLinks(DocInfoType.FRE, c);
+            var fres = await GetDocumentsLinks(DocInfoType.FRE, c);
+            docLinks.Add(DocInfoType.FRE, fres);
             // Formulário Cadastral
-            await GetDocumentsLinks(DocInfoType.FCA, c);
+            var fcas = await GetDocumentsLinks(DocInfoType.FCA, c);
+            docLinks.Add(DocInfoType.FCA, fcas);            
             // Informe Trimestral de Securitzadora
-            await GetDocumentsLinks(DocInfoType.SEC, c);
+            var secs = await GetDocumentsLinks(DocInfoType.SEC, c);
+            docLinks.Add(DocInfoType.SEC, secs);
             // Informações Anuais
-            await GetDocumentsLinks(DocInfoType.IAN, c);
+            var ians = await GetDocumentsLinks(DocInfoType.IAN, c);
+            docLinks.Add(DocInfoType.IAN, ians);
 
+            return docLinks;
         }       
 
         // private static Dictionary<DocInfoType, string> GetSectionHistoricLinks(string html)
@@ -77,30 +85,32 @@ namespace bvmfscrapper.scrappers
         //     return histLinksDict;
         // }
 
-        private static DocInfoType GetSectionType(string title){
-            var lowered = title.ToLower();
-            if(lowered.Contains("informações trimestrais")){
-                return DocInfoType.ITR;
-            }
-            if(lowered.Contains("demonstrações financeiras padronizadas")){
-                return DocInfoType.DFP;
-            }
-            if(lowered.Contains("formulário de referência")){
-                return DocInfoType.FRE;
-            }
-            if(lowered.Contains("formulário cadastral")){
-                return DocInfoType.FCA;
-            }
-            if(lowered.Contains("informações anuais")){
-                return DocInfoType.IAN;
-            }
-            return DocInfoType.Unknow;
-        }
+        // private static DocInfoType GetSectionType(string title){
+        //     var lowered = title.ToLower();
+        //     if(lowered.Contains("informações trimestrais")){
+        //         return DocInfoType.ITR;
+        //     }
+        //     if(lowered.Contains("demonstrações financeiras padronizadas")){
+        //         return DocInfoType.DFP;
+        //     }
+        //     if(lowered.Contains("formulário de referência")){
+        //         return DocInfoType.FRE;
+        //     }
+        //     if(lowered.Contains("formulário cadastral")){
+        //         return DocInfoType.FCA;
+        //     }
+        //     if(lowered.Contains("informações anuais")){
+        //         return DocInfoType.IAN;
+        //     }
+        //     return DocInfoType.Unknow;
+        // }
 
-        private static async Task GetDocumentsLinks(DocInfoType docType, Company c)
+        private static async Task<List<DocLinkInfo>> GetDocumentsLinks(DocInfoType docType, Company c)
         {
             // HistoricoFormularioReferencia.aspx?codigoCVM=6017&tipo=itr&ano=0
             var histUrl = $"HistoricoFormularioReferencia.aspx?codigoCVM={c.CodigoCVM}&tipo={docType.ToString().ToLower()}&ano=0";
+
+            var docs = new List<DocLinkInfo>();
 
             // name = key
             // kink = value
@@ -115,41 +125,18 @@ namespace bvmfscrapper.scrappers
             // o segundo h4 que contém o que desejamos. O primeiro é o título da página
             var h4 = doc.QuerySelectorAll("h4").Skip(1).Take(1).Single();
             var list = GetSectionList(h4);
-            var rows = list.Children.Where(e => e.TagName == "div" && e.Attributes["class"].Value != "divider");
+            var anchors = list.QuerySelectorAll("a");
 
-            foreach (var div in rows)
+            foreach (var a in anchors)
             {
                 // date, text, link
-                var a = div.QuerySelector("a");
-                var text = a.TextContent;
-                var date = ParseDocLinkDate(text, docType);
-                var link = ParseDocLinkHref(a.Attributes["href"].Value, docType);
+                //var a = (IHtmlAnchorElement)div.QuerySelector("a");
+                docs.Add(new DocLinkInfo(docType, (IHtmlAnchorElement)a));
             }
-      
+            return docs;
         }
 
-        private static string ParseDocLinkHref(string value, DocInfoType docType)
-        {
-            // javascript:AbreFormularioCadastral('http://www.rad.cvm.gov.br/ENETCONSULTA/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=60599&CodigoTipoInstituicao=2')
-            int i = value.IndexOf("('");
-            int li = value.LastIndexOf("')");
-            int start = i + 2;
-            int length = li - start;
-            return value.Substring(start, length);
-        }
-
-        private static DateTime ParseDocLinkDate(string text, DocInfoType docType)
-        {
-            var trimmed = text.Trim();
-            switch (docType)
-            {
-                case DocInfoType.ITR: // dia, mes e ano
-                    var datetext = text.Substring(0, 10);
-                    return DateTime.ParseExact(datetext, "dd/MM/yyyy", new CultureInfo("pt-BR"));
-                default:
-                    return DateTime.MinValue;
-            }
-        }
+        
 
         private static IElement GetSectionList(IElement section)
         {
