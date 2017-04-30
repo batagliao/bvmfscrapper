@@ -44,7 +44,7 @@ namespace bvmfscrapper.scrappers
             foreach (var c in companies.Take(1))
             {
                 await FillCompanyData(c);
-                await BvmfFinsummaryScrapper.GetFinancialInfoReferences(c);
+                await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
 
                 // ITR - Informaçõe Trimestrais                
                 // DFP - Demostrações Financeiras Padronizadas (Pré 2010; Pós 2010)
