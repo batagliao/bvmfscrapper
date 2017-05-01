@@ -18,7 +18,7 @@ using System.IO;
 namespace bvmfscrapper.scrappers
 {
 
-    public class BvmfScrapper
+    public static class BvmfScrapper
     {
         public const string BASE_URL = "http://bvmf.bmfbovespa.com.br/";
         public const string LIST_URL = "cias-listadas/empresas-listadas/";
