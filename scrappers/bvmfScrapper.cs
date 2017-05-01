@@ -45,9 +45,18 @@ namespace bvmfscrapper.scrappers
 
             foreach (var c in companies.Take(1))
             {
-                // TODO: verify if file exists
-                // TODO: verify if it is up to date
-                                
+                string file = GetFileName(c);
+                if(File.Exists(file))
+                {
+                    Console.WriteLine("Empresa já extraída.. verificando....");
+                    string filecontent = File.ReadAllText(file);
+                    Company deserialized = (Company)JsonConvert.DeserializeObject(filecontent);                    
+                    if(c.UltimaAtualizacao <= deserialized.UltimaAtualizacao){
+                        Console.WriteLine("Empresa está atualizada. Pulando");
+                        continue;
+                    }
+                }
+                
                 await FillCompanyData(c);
                 c.DocLinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
 
@@ -70,9 +79,13 @@ namespace bvmfscrapper.scrappers
             return companies;
         }
 
+        private static string GetFileName(Company c){
+            string path = $@"output{Path.DirectorySeparatorChar}basicdata{Path.DirectorySeparatorChar}{c.CodigoCVM}.json";
+            return path;
+        }
         private static void SaveFile(Company c)
         {
-            string path = $@"output\basicdata\{c.CodigoCVM}.json";
+            string path = GetFileName(c);
             Console.WriteLine("Salvando arquivo");
             string json = JsonConvert.SerializeObject(c);
             File.WriteAllText(path, json);

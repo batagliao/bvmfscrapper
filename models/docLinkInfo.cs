@@ -33,11 +33,13 @@ namespace bvmfscrapper.models
         }
 
         private DateTime? ParseDocLinkDate(string text)
-        {
+        {   
             var trimmed = text.Trim();
             switch (DocType)
             {
                 case DocInfoType.ITR: // dia, mes e ano
+                case DocInfoType.DFP:
+                case DocInfoType.IAN:
                     var datetext = text.Substring(0, 10);
                     return DateTime.ParseExact(datetext, "dd/MM/yyyy", new CultureInfo("pt-BR"));
                 default:
