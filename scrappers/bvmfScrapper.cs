@@ -43,14 +43,14 @@ namespace bvmfscrapper.scrappers
             Console.WriteLine($"{companies.Count} companhias encontradas em {watch.Elapsed.TotalSeconds} segundos");
 
 
-            foreach (var c in companies.Take(1))
+            foreach (var c in companies)
             {
                 string file = GetFileName(c);
                 if(File.Exists(file))
                 {
                     Console.WriteLine("Empresa já extraída.. verificando....");
                     string filecontent = File.ReadAllText(file);
-                    Company deserialized = (Company)JsonConvert.DeserializeObject(filecontent);                    
+                    Company deserialized = JsonConvert.DeserializeObject<Company>(filecontent);
                     if(c.UltimaAtualizacao <= deserialized.UltimaAtualizacao){
                         Console.WriteLine("Empresa está atualizada. Pulando");
                         continue;
@@ -80,12 +80,19 @@ namespace bvmfscrapper.scrappers
         }
 
         private static string GetFileName(Company c){
-            string path = $@"output{Path.DirectorySeparatorChar}basicdata{Path.DirectorySeparatorChar}{c.CodigoCVM}.json";
+            string path = $"{Program.OUT_DIR}{c.CodigoCVM}.json";
             return path;
         }
         private static void SaveFile(Company c)
         {
             string path = GetFileName(c);
+
+            var dir = Path.GetDirectoryName(path);
+            if(!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
             Console.WriteLine("Salvando arquivo");
             string json = JsonConvert.SerializeObject(c);
             File.WriteAllText(path, json);
