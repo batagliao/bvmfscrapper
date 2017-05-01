@@ -187,8 +187,10 @@ namespace bvmfscrapper.scrappers
                 c.ClassificacaoSetorial = (from item in setorialClassfications.Split('/')
                                            select item.Trim()).ToArray();
             }
-
-            c.Site = trs[5].QuerySelectorAll("td").Last().TextContent.Trim();
+            if (trs.Length > 5)
+            {
+                c.Site = trs[5].QuerySelectorAll("td").Last().TextContent.Trim();
+            }
         }
 
         private static DateTime GetDate(string text)
