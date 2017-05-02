@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using bvmfscrapper.models;
+using log4net;
+using System.Xml;
+using System.Reflection;
 
 namespace bvmfscrapper
 {
@@ -12,11 +15,23 @@ namespace bvmfscrapper
     {
         public static string OUT_DIR = $"output{Path.DirectorySeparatorChar}basicdata{Path.DirectorySeparatorChar}";
 
+        private static readonly ILog log = LogManager.GetLogger(typeof(Program));
+
+
         static void Main(string[] args)
         {
+            // Configure log4net
+            XmlDocument log4netConfig = new XmlDocument();
+            log4netConfig.Load(File.OpenRead("log4net.config"));
+
+            var repo = LogManager.CreateRepository(Assembly.GetEntryAssembly(), typeof(log4net.Repository.Hierarchy.Hierarchy));
+            log4net.Config.XmlConfigurator.Configure(repo, log4netConfig["log4net"]);
+
+            log.Info("Aplicação iniciada. Log configurado");
+
+
             Task.Run(async () =>
             {
-
                 // TODO: implement log4net
                 // TODO: accept argumento to start on step 2 and load info from companies files
 
