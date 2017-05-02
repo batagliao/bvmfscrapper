@@ -8,16 +8,18 @@ using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using bvmfscrapper.models;
+using log4net;
 
 namespace bvmfscrapper.scrappers
 {
     public class BvmfDocSummaryScrapper
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(BvmfDocSummaryScrapper));
 
         public static async Task<Dictionary<DocInfoType, List<DocLinkInfo>>> GetDocsInfoReferences(Company c)
         {
-            Console.WriteLine("Obtendo links para históricos de documentos");
-
+            Console.WriteLine("Obtendo históricos de documentos");
+            log.Info($"Obtendo históricos de documentos - {c.RazaoSocial}");
 
             // link: finacial reports
             // http://bvmf.bmfbovespa.com.br/cias-listadas/empresas-listadas/ResumoDemonstrativosFinanceiros.aspx?codigoCvm=21903&idioma=pt-br
@@ -107,6 +109,7 @@ namespace bvmfscrapper.scrappers
 
         private static async Task<List<DocLinkInfo>> GetDocumentsLinks(DocInfoType docType, Company c)
         {
+            log.Info($"Obtendo documentos do tipo {docType} - {c.RazaoSocial}");
             // HistoricoFormularioReferencia.aspx?codigoCVM=6017&tipo=itr&ano=0
             var histUrl = $"HistoricoFormularioReferencia.aspx?codigoCVM={c.CodigoCVM}&tipo={docType.ToString().ToLower()}&ano=0";
 

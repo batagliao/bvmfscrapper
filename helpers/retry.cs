@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -7,6 +8,8 @@ namespace bvmfscrapper.helpers
 {
     public static class Retry
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(CompanyExtensions));
+
         public static void Do(Action action, TimeSpan retryInterval, int retryCount = 3)
         {
             Do<object>(() =>
@@ -25,7 +28,10 @@ namespace bvmfscrapper.helpers
                 try
                 {
                     if (retry > 0)
+                    {
+                        log.Debug("Tentando novamente");
                         Thread.Sleep(retryInterval);
+                    }
                     return action();
                 }
                 catch (Exception ex)

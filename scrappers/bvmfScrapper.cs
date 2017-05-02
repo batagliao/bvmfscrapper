@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Threading;
 using bvmfscrapper.exceptions;
+using log4net;
 
 namespace bvmfscrapper.scrappers
 {
@@ -26,9 +27,14 @@ namespace bvmfscrapper.scrappers
         public const string LIST_URL = "cias-listadas/empresas-listadas/";
         const string SEGMENTO_MERCADO_BALCAO = "MB";
         const string DATETIME_MASK = @"dd/MM/yyyy HH\hmm";
+
+        private static readonly ILog log = LogManager.GetLogger(typeof(BvmfScrapper));
+
+
         public static async Task<List<Company>> GetCompanies()
         {
             Console.WriteLine("Obtendo companhias listadas");
+            log.Info("Obtendo companhias listadas");
             var watch = Stopwatch.StartNew();
 
             var payload = new Dictionary<string, string>
@@ -52,8 +58,6 @@ namespace bvmfscrapper.scrappers
                     await FillCompanyData(c);
                 }catch(UnavailableDataException ex)
                 {
-                    // dados indisponíveis
-                    // TODO: log exception
                     // ignore this company for now
                     continue;
                 }
@@ -61,11 +65,14 @@ namespace bvmfscrapper.scrappers
                 string file = c.GetFileName();
                 if (File.Exists(file))
                 {
+                    log.Info($"Arquivo da empresa {c.RazaoSocial} já existe. Verificando data");
                     Console.WriteLine("Empresa já extraída.. verificando....");
 
+                    log.Info($"Carregando empresa do arquivo {file}");
                     var deserialized = Company.Load(file);
                     if (c.UltimaAtualizacao <= deserialized.UltimaAtualizacao)
                     {
+                        log.Info($"Empresa já está atualizada. Data última atualização: {c.UltimaAtualizacao}");
                         Console.WriteLine("Empresa está atualizada. Pulando");
                         c.NeedsUpdate = false;
                         continue;
@@ -73,6 +80,7 @@ namespace bvmfscrapper.scrappers
                 }
 
                 // save file
+                log.Info("Salvando arquivo da empresa");
                 c.Save();
 
             }
@@ -82,6 +90,7 @@ namespace bvmfscrapper.scrappers
 
         private static List<Company> ParseCompanies(string html)
         {
+            log.Info("Extraindo lista de empresas");
             var parser = new HtmlParser();
             var doc = parser.Parse(html);
             //doc.LoadHtml(html);
@@ -97,6 +106,11 @@ namespace bvmfscrapper.scrappers
                 var nomepregao = tds[1].TextContent.Trim();
                 var segmento = tds[2].TextContent.Trim();
 
+                log.Info($"Extraindo Companhia: {razao}");
+                log.Info($"nomepregao = {nomepregao}");
+                log.Info($"href = {href}");
+                log.Info($"segmento = {segmento}");
+
                 if (segmento != SEGMENTO_MERCADO_BALCAO)
                 {
                     var company = new Company();
@@ -105,7 +119,13 @@ namespace bvmfscrapper.scrappers
                     company.Segmento = segmento.Trim();
                     company.CodigoCVM = GetCodigoCvm(href);
                     companies.Add(company);
+                    log.Info($"codigo cvm {company.CodigoCVM}");
                 }
+                else
+                {
+                    log.Info($"segmento {SEGMENTO_MERCADO_BALCAO}. Ignorando");
+                }
+
             }
 
             return companies;
@@ -120,6 +140,7 @@ namespace bvmfscrapper.scrappers
         private static async Task FillCompanyData(Company c)
         {
             Console.WriteLine($"Obtendo informações básicas de {c.RazaoSocial}");
+            log.Info($"Obtendo informações básicas de {c.RazaoSocial}");
             var watch = Stopwatch.StartNew();
 
             var url = $"{BASE_URL}/pt-br/mercados/acoes/empresas/ExecutaAcaoConsultaInfoEmp.asp?CodCVM={c.CodigoCVM}&ViewDoc=0";
@@ -133,7 +154,7 @@ namespace bvmfscrapper.scrappers
 
         private static void ParseBasicData(string html, Company c)
         {
-
+            log.Info($"Extraindo informações básicas de {c.RazaoSocial}");
             var parser = new HtmlParser();
             var doc = parser.Parse(html);
             //doc.LoadHtml(html);
@@ -145,6 +166,7 @@ namespace bvmfscrapper.scrappers
             {
                 if(alert.TextContent.ToLowerInvariant().Contains("dados indisponiveis"))
                 {
+                    log.Error($"Dados de {c.RazaoSocial} não disponíveis.");
                     throw new UnavailableDataException();
                 }
             }
@@ -159,6 +181,7 @@ namespace bvmfscrapper.scrappers
             // text = Atualizado em 28/04/2017, às 05h13
             var date = GetDate(p.TextContent.Trim());
             c.UltimaAtualizacao = date;
+            log.Info($"Última atualização {c.UltimaAtualizacao.ToString("yyyy-MM-dd HH:mm:ss")}");
 
             // second row is basic company data
             var tableficha = rows[1].QuerySelector("table.ficha");
@@ -167,6 +190,7 @@ namespace bvmfscrapper.scrappers
             // ignore first TR, we already have this info 
             var anchors = trs[1].QuerySelectorAll("td").Last().QuerySelectorAll("a.LinkCodNeg").Select(n => n.TextContent);
             c.CodigosNegociacao = new SortedSet<string>(anchors);
+            log.Info($"Códigos de negociação {string.Join(",", c.CodigosNegociacao.ToArray())}");
 
             var cnpj = trs[2].QuerySelectorAll("td").Last().TextContent.Trim();
             c.CNPJ = cnpj;

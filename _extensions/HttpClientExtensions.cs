@@ -1,4 +1,5 @@
 ﻿using bvmfscrapper.helpers;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -10,8 +11,13 @@ namespace bvmfscrapper
 {
     public static class HttpClientExtensions
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(CompanyExtensions));
+
+
         public static async Task<string> PostDataAsync(this HttpClient client, string url, Dictionary<string, string> data)
         {
+            log.Info($"POST HTTP. URL = {url}");
+
             var content = new FormUrlEncodedContent(data);
             var response = await client.PostAsync(url, content);
             if(response.IsSuccessStatusCode)
@@ -20,11 +26,14 @@ namespace bvmfscrapper
             }
 
             var exception = new HttpRequestException($"{response.StatusCode} - {response.ReasonPhrase}");
+            log.Error(exception);
             return await Task.FromException<string>(exception);
         }
 
         public static async Task<string> GetStringWithRetryAsync(this HttpClient client, string url)
         {
+            log.Info($"GET HTTP. URL = {url}");
+
             return await Retry.Do(async () =>
             {
                 var s = await client.GetStringAsync(url);

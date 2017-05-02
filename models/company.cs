@@ -39,6 +39,7 @@ namespace bvmfscrapper.models
 
         public static Company Load(string filename)
         {
+            
             string filecontent = File.ReadAllText(filename);
             Company deserialized = JsonConvert.DeserializeObject<Company>(filecontent);
             return deserialized;

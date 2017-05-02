@@ -32,15 +32,26 @@ namespace bvmfscrapper
 
             Task.Run(async () =>
             {
-                // TODO: implement log4net
-                // TODO: accept argumento to start on step 2 and load info from companies files
+                // TODO: accept argument to start on step 2 and load info from companies files
 
                 // step 1 - get companies basic data and links
+                log.Info("Iniciando a extração de empresas");
+                log.Info("---------------------------------");
                 var companies = await BvmfScrapper.GetCompanies().ConfigureAwait(false);
+                log.Info("---------------------------------");
+                log.Info("Finalizada a extração de empresas");
+                log.Info("*********************************");
+
+
+                // save companies on database
 
                 // step 2 - get doc links
+                log.Info("Iniciando a extração de links de docs das empresas");
+                log.Info("---------------------------------");
                 await ExtractDocLinksAsync(companies);
-
+                log.Info("---------------------------------");
+                log.Info("Finalizada a extração de links de docs");
+                log.Info("*********************************");
 
                 // step 2 - parse the aditional links
                 // load files and operate over them
@@ -65,6 +76,7 @@ namespace bvmfscrapper
         {
             foreach (var c in companies.Where(c => c.NeedsUpdate))
             {
+                log.Info($"Extraindo link da empresa {c.RazaoSocial}");
                 var doclinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
                 //save links for company
                 c.SaveDocLinks(doclinks);
