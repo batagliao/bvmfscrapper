@@ -14,6 +14,8 @@ using AngleSharp.Dom;
 using AngleSharp;
 using Newtonsoft.Json;
 using System.IO;
+using System.Threading;
+using bvmfscrapper.exceptions;
 
 namespace bvmfscrapper.scrappers
 {
@@ -45,57 +47,37 @@ namespace bvmfscrapper.scrappers
 
             foreach (var c in companies)
             {
-                string file = GetFileName(c);
-                if(File.Exists(file))
+                try
+                {
+                    await FillCompanyData(c);
+                }catch(UnavailableDataException ex)
+                {
+                    // dados indisponíveis
+                    // TODO: log exception
+                    // ignore this company for now
+                    continue;
+                }
+
+                string file = c.GetFileName();
+                if (File.Exists(file))
                 {
                     Console.WriteLine("Empresa já extraída.. verificando....");
-                    string filecontent = File.ReadAllText(file);
-                    Company deserialized = JsonConvert.DeserializeObject<Company>(filecontent);
-                    if(c.UltimaAtualizacao <= deserialized.UltimaAtualizacao){
+
+                    var deserialized = Company.Load(file);
+                    if (c.UltimaAtualizacao <= deserialized.UltimaAtualizacao)
+                    {
                         Console.WriteLine("Empresa está atualizada. Pulando");
+                        c.NeedsUpdate = false;
                         continue;
                     }
                 }
-                
-                await FillCompanyData(c);
-                c.DocLinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
 
                 // save file
-                SaveFile(c);
-                
-
-                // aba Informações relevantes
-                // aba Eventos Corporativos
-                // - proventos em dinheiro
-                // - proventos em ativos
-                // - subscrição
-                // - grupamento
-                // - desdobramento
-
-                // Históricos de cotações
+                c.Save();
 
             }
 
             return companies;
-        }
-
-        private static string GetFileName(Company c){
-            string path = $"{Program.OUT_DIR}{c.CodigoCVM}.json";
-            return path;
-        }
-        private static void SaveFile(Company c)
-        {
-            string path = GetFileName(c);
-
-            var dir = Path.GetDirectoryName(path);
-            if(!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            Console.WriteLine("Salvando arquivo");
-            string json = JsonConvert.SerializeObject(c);
-            File.WriteAllText(path, json);
         }
 
         private static List<Company> ParseCompanies(string html)
@@ -142,7 +124,7 @@ namespace bvmfscrapper.scrappers
 
             var url = $"{BASE_URL}/pt-br/mercados/acoes/empresas/ExecutaAcaoConsultaInfoEmp.asp?CodCVM={c.CodigoCVM}&ViewDoc=0";
             var client = new HttpClient();
-            var response = await client.GetStringAsync(url);
+            var response = await client.GetStringWithRetryAsync(url);
 
             ParseBasicData(response, c);
             watch.Stop();
@@ -151,14 +133,29 @@ namespace bvmfscrapper.scrappers
 
         private static void ParseBasicData(string html, Company c)
         {
+
             var parser = new HtmlParser();
             var doc = parser.Parse(html);
             //doc.LoadHtml(html);
 
+
+            // first thing: verify if response is "Dados indisponiveis"
+            var alert = doc.QuerySelector("div.alert-box");
+            if(alert != null)
+            {
+                if(alert.TextContent.ToLowerInvariant().Contains("dados indisponiveis"))
+                {
+                    throw new UnavailableDataException();
+                }
+            }
+
+
             var rows = doc.QuerySelectorAll("div.row");
 
+            IElement p = null;
             // first row is last update datetime
-            var p = rows[0].QuerySelector("p.legenda");
+            p = rows[0].QuerySelector("p.legenda");
+
             // text = Atualizado em 28/04/2017, às 05h13
             var date = GetDate(p.TextContent.Trim());
             c.UltimaAtualizacao = date;
@@ -178,7 +175,7 @@ namespace bvmfscrapper.scrappers
             if (!string.IsNullOrWhiteSpace(mainActivity))
             {
                 c.AtividadePrincipal = (from item in mainActivity.Split('/')
-                                       select item.Trim()).ToArray();
+                                        select item.Trim()).ToArray();
             }
 
             var setorialClassfications = trs[4].QuerySelectorAll("td").Last().TextContent.Trim();
@@ -212,6 +209,6 @@ namespace bvmfscrapper.scrappers
 
         }
 
-        
+
     }
 }

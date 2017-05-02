@@ -1,4 +1,5 @@
-﻿using System;
+﻿using bvmfscrapper.helpers;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -20,6 +21,18 @@ namespace bvmfscrapper
 
             var exception = new HttpRequestException($"{response.StatusCode} - {response.ReasonPhrase}");
             return await Task.FromException<string>(exception);
+        }
+
+        public static async Task<string> GetStringWithRetryAsync(this HttpClient client, string url)
+        {
+            return await Retry.Do(async () =>
+            {
+                var s = await client.GetStringAsync(url);
+                return s;
+            },
+            retryInterval: TimeSpan.FromSeconds(1),
+            retryCount: 3
+            );
         }
 
     }
