@@ -251,3 +251,5 @@ paket-files/
 .idea/
 *.sln.iml
 /output/basicdata
+/connection.string
+/connection.string

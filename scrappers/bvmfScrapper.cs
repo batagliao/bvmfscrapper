@@ -31,7 +31,7 @@ namespace bvmfscrapper.scrappers
         private static readonly ILog log = LogManager.GetLogger(typeof(BvmfScrapper));
 
 
-        public static async Task<List<Company>> GetCompanies()
+        public static async Task<List<ScrappedCompany>> GetCompanies()
         {
             Console.WriteLine("Obtendo companhias listadas");
             log.Info("Obtendo companhias listadas");
@@ -69,7 +69,7 @@ namespace bvmfscrapper.scrappers
                     Console.WriteLine("Empresa já extraída.. verificando....");
 
                     log.Info($"Carregando empresa do arquivo {file}");
-                    var deserialized = Company.Load(file);
+                    var deserialized = ScrappedCompany.Load(file);
                     if (c.UltimaAtualizacao <= deserialized.UltimaAtualizacao)
                     {
                         log.Info($"Empresa já está atualizada. Data última atualização: {c.UltimaAtualizacao}");
@@ -88,14 +88,14 @@ namespace bvmfscrapper.scrappers
             return companies;
         }
 
-        private static List<Company> ParseCompanies(string html)
+        private static List<ScrappedCompany> ParseCompanies(string html)
         {
             log.Info("Extraindo lista de empresas");
             var parser = new HtmlParser();
             var doc = parser.Parse(html);
             //doc.LoadHtml(html);
 
-            List<Company> companies = new List<Company>();
+            List<ScrappedCompany> companies = new List<ScrappedCompany>();
 
             var nodes = doc.QuerySelectorAll("tr.GridRow_SiteBmfBovespa, tr.GridAltRow_SiteBmfBovespa");
             foreach (var node in nodes)
@@ -113,7 +113,7 @@ namespace bvmfscrapper.scrappers
 
                 if (segmento != SEGMENTO_MERCADO_BALCAO)
                 {
-                    var company = new Company();
+                    var company = new ScrappedCompany();
                     company.RazaoSocial = razao.Trim();
                     company.NomePregao = nomepregao.Trim();
                     company.Segmento = segmento.Trim();
@@ -137,7 +137,7 @@ namespace bvmfscrapper.scrappers
             return Convert.ToInt32(href.Substring(index + 1));
         }
 
-        private static async Task FillCompanyData(Company c)
+        private static async Task FillCompanyData(ScrappedCompany c)
         {
             Console.WriteLine($"Obtendo informações básicas de {c.RazaoSocial}");
             log.Info($"Obtendo informações básicas de {c.RazaoSocial}");
@@ -152,7 +152,7 @@ namespace bvmfscrapper.scrappers
             Console.WriteLine($"dados obtidos em {watch.Elapsed.TotalSeconds} segundos");
         }
 
-        private static void ParseBasicData(string html, Company c)
+        private static void ParseBasicData(string html, ScrappedCompany c)
         {
             log.Info($"Extraindo informações básicas de {c.RazaoSocial}");
             var parser = new HtmlParser();

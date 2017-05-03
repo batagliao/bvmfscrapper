@@ -13,13 +13,13 @@ namespace bvmfscrapper
         private static readonly ILog log = LogManager.GetLogger(typeof(CompanyExtensions));
 
 
-        public static string GetFileName(this Company c)
+        public static string GetFileName(this ScrappedCompany c)
         {
             string path = $"{Program.OUT_DIR}{c.CodigoCVM}.json";
             return path;
         }
 
-        public static void SaveDocLinks(this Company c, Dictionary<DocInfoType, List<DocLinkInfo>> links)
+        public static void SaveDocLinks(this ScrappedCompany c, Dictionary<DocInfoType, List<DocLinkInfo>> links)
         {
             log.Info($"Salvando arquivo de links para a empresa {c.RazaoSocial}");
 

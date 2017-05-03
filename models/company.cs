@@ -6,7 +6,7 @@ using System.Text;
 
 namespace bvmfscrapper.models
 {
-    public class Company
+    public class ScrappedCompany
     {
         public string RazaoSocial { get; set; }
         public string NomePregao { get; set; }
@@ -37,11 +37,11 @@ namespace bvmfscrapper.models
             File.WriteAllText(path, json);
         }
 
-        public static Company Load(string filename)
+        public static ScrappedCompany Load(string filename)
         {
             
             string filecontent = File.ReadAllText(filename);
-            Company deserialized = JsonConvert.DeserializeObject<Company>(filecontent);
+            ScrappedCompany deserialized = JsonConvert.DeserializeObject<ScrappedCompany>(filecontent);
             return deserialized;
         }
 

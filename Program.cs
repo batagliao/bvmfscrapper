@@ -45,6 +45,8 @@ namespace bvmfscrapper
 
                 // save companies on database
 
+
+
                 // step 2 - get doc links
                 log.Info("Iniciando a extração de links de docs das empresas");
                 log.Info("---------------------------------");
@@ -72,7 +74,7 @@ namespace bvmfscrapper
             }).GetAwaiter().GetResult();
         }
 
-        static async Task ExtractDocLinksAsync(List<Company> companies)
+        static async Task ExtractDocLinksAsync(List<ScrappedCompany> companies)
         {
             foreach (var c in companies.Where(c => c.NeedsUpdate))
             {

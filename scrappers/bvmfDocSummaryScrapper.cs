@@ -16,7 +16,7 @@ namespace bvmfscrapper.scrappers
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(BvmfDocSummaryScrapper));
 
-        public static async Task<Dictionary<DocInfoType, List<DocLinkInfo>>> GetDocsInfoReferences(Company c)
+        public static async Task<Dictionary<DocInfoType, List<DocLinkInfo>>> GetDocsInfoReferences(ScrappedCompany c)
         {
             Console.WriteLine("Obtendo históricos de documentos");
             log.Info($"Obtendo históricos de documentos - {c.RazaoSocial}");
@@ -107,7 +107,7 @@ namespace bvmfscrapper.scrappers
         //     return DocInfoType.Unknow;
         // }
 
-        private static async Task<List<DocLinkInfo>> GetDocumentsLinks(DocInfoType docType, Company c)
+        private static async Task<List<DocLinkInfo>> GetDocumentsLinks(DocInfoType docType, ScrappedCompany c)
         {
             log.Info($"Obtendo documentos do tipo {docType} - {c.RazaoSocial}");
             // HistoricoFormularioReferencia.aspx?codigoCVM=6017&tipo=itr&ano=0
