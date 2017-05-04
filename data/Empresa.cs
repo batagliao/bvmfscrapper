@@ -31,5 +31,7 @@ namespace bvmfscrapper.data
 
         [Required]
         public DateTime UltimaAtualizacao { get; set; }
+
+        public List<Ticker> Tickers { get; set; }
     }
 }

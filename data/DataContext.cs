@@ -30,5 +30,10 @@ namespace bvmfscrapper.data
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlServer(connectionString);
         }
+
+        // Entities
+        public DbSet<Empresa> Empresas { get; set; }
+
+        public DbSet<Ticker> Tickers { get; set; }
     }
 }
