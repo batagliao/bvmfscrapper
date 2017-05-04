@@ -1,5 +1,8 @@
 ﻿using bvmfscrapper.exceptions;
+using bvmfscrapper.helpers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,6 +32,7 @@ namespace bvmfscrapper.data
         {
             base.OnConfiguring(optionsBuilder);
             optionsBuilder.UseSqlServer(connectionString);
+            optionsBuilder.EnableSensitiveDataLogging();
         }
 
         // Entities

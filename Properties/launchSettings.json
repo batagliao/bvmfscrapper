@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "bvmfscrapper": {
+      "commandName": "Project",
+      "commandLineArgs": "--dont-extract-companies"
+    }
+  }
+}

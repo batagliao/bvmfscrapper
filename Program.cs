@@ -8,6 +8,8 @@ using bvmfscrapper.models;
 using log4net;
 using System.Xml;
 using System.Reflection;
+using bvmfscrapper.data.repositories;
+using System.Text;
 
 namespace bvmfscrapper
 {
@@ -20,6 +22,11 @@ namespace bvmfscrapper
 
         static void Main(string[] args)
         {
+
+
+            // Configure Windows console
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
             // Configure log4net
             XmlDocument log4netConfig = new XmlDocument();
             log4netConfig.Load(File.OpenRead("log4net.config"));
@@ -29,49 +36,80 @@ namespace bvmfscrapper
 
             log.Info("Aplicação iniciada. Log configurado");
 
+            var options = Options.ParseOptions(args);
+            //try
+            //{
 
-            Task.Run(async () =>
+
+                Task.Run(async () =>
+                {
+                    List<ScrappedCompany> companies = null;
+                    if (options.ShouldLoadCompanyList)
+                    {
+                        // step 1 - get companies basic data and links
+                        log.Info("Iniciando a extração de empresas");
+                        log.Info("---------------------------------");
+                        companies = await BvmfScrapper.GetCompanies().ConfigureAwait(false);
+                        log.Info("---------------------------------");
+                        log.Info("Finalizada a extração de empresas");
+                        log.Info("*********************************");
+                    }
+
+                    if (options.ShouldUpdateCompaniesIdDb)
+                    {
+                        // step 2 - save companies on database
+                        log.Info("Iniciando a atualização de empresas no banco de dados");
+                        log.Info("---------------------------------");
+                        UpdateCompaniesInDatabase(companies);
+                        log.Info("---------------------------------");
+                        log.Info("Finalizada a atualização de empresas no banco de dados");
+                        log.Info("*********************************");
+                    }
+
+
+                    if (options.ShouldExtractDocLinks)
+                    {
+                        // step 3 - get doc links
+                        log.Info("Iniciando a extração de links de docs das empresas");
+                        log.Info("---------------------------------");
+                        await ExtractDocLinksAsync(companies);
+                        log.Info("---------------------------------");
+                        log.Info("Finalizada a extração de links de docs");
+                        log.Info("*********************************");
+                    }
+
+
+                    // aba Informações relevantes
+                    // aba Eventos Corporativos
+                    // - proventos em dinheiro
+                    // - proventos em ativos
+                    // - subscrição
+                    // - grupamento
+                    // - desdobramento
+
+                    // Históricos de cotações
+
+                    // historico cotacoes
+                    // http://bvmf.bmfbovespa.com.br/sig/FormConsultaMercVista.asp?strTipoResumo=RES_MERC_VISTA&strSocEmissora=ITSA&strDtReferencia=03-2017&strIdioma=P&intCodNivel=2&intCodCtrl=160#
+
+                }).GetAwaiter().GetResult();
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    Console.WriteLine(ex.ToString());
+            //    log.Fatal(ex.ToString());
+            //}
+        }
+
+        static void UpdateCompaniesInDatabase(List<ScrappedCompany> companies)
+        {
+            if (companies == null)
             {
-                // TODO: accept argument to start on step 2 and load info from companies files
+                companies = ScrappedCompany.LoadCompaniesFromFiles(OUT_DIR);
+            }
 
-                // step 1 - get companies basic data and links
-                log.Info("Iniciando a extração de empresas");
-                log.Info("---------------------------------");
-                var companies = await BvmfScrapper.GetCompanies().ConfigureAwait(false);
-                log.Info("---------------------------------");
-                log.Info("Finalizada a extração de empresas");
-                log.Info("*********************************");
-
-
-                // save companies on database
-
-
-
-                // step 2 - get doc links
-                log.Info("Iniciando a extração de links de docs das empresas");
-                log.Info("---------------------------------");
-                await ExtractDocLinksAsync(companies);
-                log.Info("---------------------------------");
-                log.Info("Finalizada a extração de links de docs");
-                log.Info("*********************************");
-
-                // step 2 - parse the aditional links
-                // load files and operate over them
-
-                // aba Informações relevantes
-                // aba Eventos Corporativos
-                // - proventos em dinheiro
-                // - proventos em ativos
-                // - subscrição
-                // - grupamento
-                // - desdobramento
-
-                // Históricos de cotações
-
-                // historico cotacoes
-                // http://bvmf.bmfbovespa.com.br/sig/FormConsultaMercVista.asp?strTipoResumo=RES_MERC_VISTA&strSocEmissora=ITSA&strDtReferencia=03-2017&strIdioma=P&intCodNivel=2&intCodCtrl=160#
-
-            }).GetAwaiter().GetResult();
+            EmpresaRepository.InsertOrUpdate(companies);
         }
 
         static async Task ExtractDocLinksAsync(List<ScrappedCompany> companies)

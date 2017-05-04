@@ -6,6 +6,7 @@ using System.Text;
 
 namespace bvmfscrapper.data
 {
+    [Table("Ticker")]
     public class Ticker
     {
         [Key]
@@ -18,7 +19,7 @@ namespace bvmfscrapper.data
         [Required]
         public int CodigoCVM { get; set; }
 
-        [ForeignKey(nameof(CodigoCVM))]
+        [ForeignKey(nameof(CodigoCVM))] 
         public Empresa Empresa { get; set; }
     }
 }
