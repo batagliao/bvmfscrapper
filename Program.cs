@@ -19,6 +19,20 @@ namespace bvmfscrapper
 
         private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 
+        // olhar esse ftp e ver se existe algo útil:
+        // ftp://ftp.bmf.com.br
+
+        // MARKET DATA
+        // ftp://ftp.bmf.com.br/MarketData/
+
+        // isso pode ser interessante
+        // https://github.com/pedrocordeiro/bovespa
+
+        // aqui é possível obter as cotações
+        // http://pregao-online.bmfbovespa.com.br/Cotacoes.aspx?idioma=pt-BR
+
+        // CVM - Todos os documentos 
+        // http://siteempresas.bovespa.com.br/consbov/ExibeTodosDocumentosCVM.asp?CCVM=5410&CNPJ=84.429.695/0001-11&TipoDoc=C
 
         static void Main(string[] args)
         {
@@ -114,8 +128,14 @@ namespace bvmfscrapper
 
         static async Task ExtractDocLinksAsync(List<ScrappedCompany> companies)
         {
+            if(companies == null)
+            {
+                companies = ScrappedCompany.LoadCompaniesFromFiles(OUT_DIR);
+            }
+
             foreach (var c in companies)
             {
+                Console.WriteLine($"Extraindo link da empresa {c.RazaoSocial}");
                 log.Info($"Extraindo link da empresa {c.RazaoSocial}");
                 var doclinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
                 //save links for company

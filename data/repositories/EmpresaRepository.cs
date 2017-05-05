@@ -38,6 +38,7 @@ namespace bvmfscrapper.data.repositories
                     .SingleOrDefault(e => e.Codigo == company.CodigoCVM); // runs in memory
 
                     log.Info($"Gravando empresa {company.RazaoSocial} no banco");
+                    Console.WriteLine($"Gravando empresa {company.RazaoSocial} no banco");
 
                     if (empresaInDb != null) //update
                     {
@@ -58,8 +59,8 @@ namespace bvmfscrapper.data.repositories
                         }
                         db.Empresas.Add(e);
                     }
+                    db.SaveChanges();                    
                 }
-                db.SaveChanges();
             }
         }
 
