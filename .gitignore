@@ -253,3 +253,4 @@ paket-files/
 /output/basicdata
 /connection.string
 /connection.string
+output/**

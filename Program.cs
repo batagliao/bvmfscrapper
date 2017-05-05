@@ -114,7 +114,7 @@ namespace bvmfscrapper
 
         static async Task ExtractDocLinksAsync(List<ScrappedCompany> companies)
         {
-            foreach (var c in companies.Where(c => c.NeedsUpdate))
+            foreach (var c in companies)
             {
                 log.Info($"Extraindo link da empresa {c.RazaoSocial}");
                 var doclinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);

@@ -80,12 +80,22 @@ namespace bvmfscrapper.scrappers
                 }
 
                 // save file
-                log.Info("Salvando arquivo da empresa");
-                c.Save();
+                // se a empresa não tiver código de negociação, ignorar
+                if (c.CodigosNegociacao?.Count() == 0 || c.CodigosNegociacao == null)
+                {
+                    Console.WriteLine($"Ignorando empresa {c.RazaoSocial} por não possuir código de negociação");
+                    log.Info($"Ignorando empresa {c.RazaoSocial} por não possuir código de negociação");
+                }
+                else
+                {
+                    log.Info("Salvando arquivo da empresa");
+                    c.Save();
+                }
 
             }
 
-            return companies;
+            // retorna somente as empresas que possuam códigos de negociação
+            return companies.Where(c => c.CodigosNegociacao != null && c.CodigosNegociacao.Count() > 0).ToList();
         }
 
         private static List<ScrappedCompany> ParseCompanies(string html)
@@ -116,7 +126,7 @@ namespace bvmfscrapper.scrappers
                     var company = new ScrappedCompany();
                     company.RazaoSocial = razao.Trim();
                     company.NomePregao = nomepregao.Trim();
-                    company.Segmento = segmento.Trim();
+                    company.Segmento = SegmentoEnumExtensions.FromString(segmento.Trim());
                     company.CodigoCVM = GetCodigoCvm(href);
                     companies.Add(company);
                     log.Info($"codigo cvm {company.CodigoCVM}");
@@ -188,9 +198,18 @@ namespace bvmfscrapper.scrappers
             var trs = tableficha.ChildNodes[1].ChildNodes.Where(n => n.NodeName.ToLowerInvariant() == "tr").OfType<IElement>().ToArray();
 
             // ignore first TR, we already have this info 
-            var anchors = trs[1].QuerySelectorAll("td").Last().QuerySelectorAll("a.LinkCodNeg").Select(n => n.TextContent);
-            c.CodigosNegociacao = new SortedSet<string>(anchors);
-            log.Info($"Códigos de negociação {string.Join(",", c.CodigosNegociacao.ToArray())}");
+            var td = trs[1].QuerySelectorAll("td").Last();
+            if (td.TextContent.Contains("Nenhum ativo no Mercado a Vista"))
+            {
+                log.Info($"A empresa {c.RazaoSocial} não possui ativos no mercado");
+            }
+            else
+            {
+                var anchors = td.QuerySelectorAll("a.LinkCodNeg").Select(n => n.TextContent);
+                c.CodigosNegociacao = new SortedSet<string>(anchors);
+                log.Info($"Códigos de negociação {string.Join(",", c.CodigosNegociacao.ToArray())}");
+
+            }
 
             var cnpj = trs[2].QuerySelectorAll("td").Last().TextContent.Trim();
             c.CNPJ = cnpj;

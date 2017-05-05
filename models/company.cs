@@ -7,13 +7,14 @@ using System.Text;
 
 namespace bvmfscrapper.models
 {
+
     public class ScrappedCompany
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(CompanyExtensions));
 
         public string RazaoSocial { get; set; }
         public string NomePregao { get; set; }
-        public string Segmento { get; set; }
+        public SegmentoEnum Segmento { get; set; }
         //TODO:
         /*
          * (NM) Cia. Novo Mercado

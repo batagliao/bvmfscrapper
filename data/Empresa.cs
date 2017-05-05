@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
+using bvmfscrapper.models;
 
 namespace bvmfscrapper.data
 {
@@ -18,7 +19,15 @@ namespace bvmfscrapper.data
         [Required]
         public string NomePregao { get; set; }
 
-        public string Segmento { get; set; }
+        [Column("Segmento")]
+        public string SegmentoValue { get; set; }
+
+        [NotMapped]
+        public SegmentoEnum Segmento 
+        {
+            get { return SegmentoEnumExtensions.FromString(SegmentoValue); }
+            set { SegmentoValue = value.AsString(); }
+        }
 
         [Required]
         public string CNPJ { get; set; }
