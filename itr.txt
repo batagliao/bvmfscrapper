@@ -1,0 +1,40 @@
+Principais informações
+IDDocumento e Codigo CVM
+
+ITR
+3T2016 (30/09/2016)
+
+Balanço Patrimonial - Ativos (INDIVIDUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=2&Periodo=0&Grupo=DFs+Individuais&Quadro=Balan%c3%a7o+Patrimonial+Ativo&NomeTipoDocumento=ITR&Titulo=Balan%C3%A7o%20Patrimonial%20Ativo&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+Balanço Patrimonial - Ativos (CONSOLIDADO)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=2&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Balan%C3%A7o+Patrimonial+Ativo&NomeTipoDocumento=ITR&Titulo=Balan%C3%A7o%20Patrimonial%20Ativo&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+
+Balanço Patrimonial - Passivo (INDIVIDUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=3&Periodo=0&Grupo=DFs+Individuais&Quadro=Balan%C3%A7o+Patrimonial+Passivo&NomeTipoDocumento=ITR&Titulo=Balan%C3%A7o%20Patrimonial%20Passivo&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+Balanço Patrimonial - Passivo (CONSOLIDADO
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=3&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Balan%C3%A7o+Patrimonial+Passivo&NomeTipoDocumento=ITR&Titulo=Balan%C3%A7o%20Patrimonial%20Passivo&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+
+DRE (INDIVIDUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=4&Periodo=0&Grupo=DFs+Individuais&Quadro=Demonstra%c3%a7%c3%a3o+do+Resultado&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20do%20Resultado&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+DRE (CONSOLIDADO)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=4&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Demonstra%c3%a7%c3%a3o+do+Resultado&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20do%20Resultado&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+
+DRE Abrangente (INDIVUDUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=5&Periodo=0&Grupo=DFs+Individuais&Quadro=Demonstra%c3%a7%c3%a3o+do+Resultado+Abrangente&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20do%20Resultado%20Abrangente&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+DRE Abrangente (CONSOLIDADO)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=5&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Demonstra%C3%A7%C3%A3o+do+Resultado+Abrangente&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20do%20Resultado%20Abrangente&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+
+Fluxo de Caixa (INDIVIDUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=99&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Demonstra%C3%A7%C3%A3o+do+Fluxo+de+Caixa&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20do%20Fluxo%20de%20Caixa&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+Fluxo de Caixa (CONSOLIDADO)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=99&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Demonstra%C3%A7%C3%A3o+do+Fluxo+de+Caixa&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20do%20Fluxo%20de%20Caixa&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+
+Mutação de Patrimonio (INDIVIDUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=100&Demonstracao=8&Periodo=4|6&Grupo=DFs+Consolidadas&Quadro=Demonstra%C3%A7%C3%A3o+das+Muta%C3%A7%C3%B5es+do+Patrim%C3%B4nio+L%C3%ADquido&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20das%20Muta%C3%A7%C3%B5es%20do%20Patrim%C3%B4nio%20L%C3%ADquido&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+Mutação de Patrimonio (CONSOLIDADO)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=200&Demonstracao=8&Periodo=4|6&Grupo=DFs+Consolidadas&Quadro=Demonstra%C3%A7%C3%A3o+das+Muta%C3%A7%C3%B5es+do+Patrim%C3%B4nio+L%C3%ADquido&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20das%20Muta%C3%A7%C3%B5es%20do%20Patrim%C3%B4nio%20L%C3%ADquido&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+
+Demonstração de Valor Adicionado (INDIVUAL)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=9&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Demonstra%c3%a7%c3%a3o+de+Valor+Adicionado&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20de%20Valor%20Adicionado&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
+Demonstração de Valor Adicionado (CONSOLIDADO)
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=9&Periodo=0&Grupo=DFs+Consolidadas&Quadro=Demonstra%c3%a7%c3%a3o+de+Valor+Adicionado&NomeTipoDocumento=ITR&Titulo=Demonstra%C3%A7%C3%A3o%20de%20Valor%20Adicionado&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
