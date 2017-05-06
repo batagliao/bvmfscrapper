@@ -7,8 +7,6 @@ using log4net;
 
 namespace bvmfscrapper.data.repositories
 {
-    // TODO: LOG 4 NET the WHOLE file
-
 
     public class EmpresaRepository
     {

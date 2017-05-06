@@ -96,6 +96,8 @@ namespace bvmfscrapper
                     log.Info("*********************************");
                 }
 
+                
+
 
                     // aba Informações relevantes
                     // aba Eventos Corporativos
