@@ -254,3 +254,4 @@ paket-files/
 /connection.string
 /connection.string
 output/**
+.DS_STORE

@@ -15,7 +15,13 @@ namespace bvmfscrapper
 
         public static string GetFileName(this ScrappedCompany c)
         {
-            string path = $"{Program.OUT_DIR}{c.CodigoCVM}.json";
+            string path = $"{Program.BASICDATA_DIR}{c.CodigoCVM}.json";
+            return path;
+        }
+
+        public static string GetLinksFileName(this ScrappedCompany c)
+        {
+            string path = $"{Program.LINKS_DIR}{c.CodigoCVM}.json";
             return path;
         }
 
@@ -23,8 +29,7 @@ namespace bvmfscrapper
         {
             log.Info($"Salvando arquivo de links para a empresa {c.RazaoSocial}");
 
-            var filename = c.GetFileName();
-            filename = Path.ChangeExtension(filename, ".links.json");
+            var filename = c.GetLinksFileName();            
 
             log.Info($"File={filename}");
 

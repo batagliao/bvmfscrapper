@@ -88,8 +88,24 @@ namespace bvmfscrapper.scrappers
                 }
                 else
                 {
-                    log.Info("Salvando arquivo da empresa");
-                    c.Save();
+                    // Só deve sobrepor o arquivo da empresa se a data de atualização (company.UltimaAtualizacao) for 
+                    // maior que a data do arquivo (FileTime)
+                    // ou se o arquivo não existir
+
+                    bool shouldSave = true;
+                    var info = new FileInfo(c.GetFileName());
+                    if(info.Exists && info.CreationTime > c.UltimaAtualizacao)
+                    {
+                        shouldSave = false;
+                    }
+                    if (shouldSave)
+                    {
+                        log.Info("Salvando arquivo da empresa");
+                        c.Save();
+                    }else{
+                        Console.WriteLine($"Empresa {c.RazaoSocial} não necessita ser atualizada - arquivo não foi salvo");
+                        log.Info($"Empresa {c.RazaoSocial} não necessita ser atualizada - arquivo não foi salvo");
+                    }
                 }
 
             }

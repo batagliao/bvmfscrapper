@@ -15,7 +15,9 @@ namespace bvmfscrapper
 {
     class Program
     {
-        public static string OUT_DIR = $"output{Path.DirectorySeparatorChar}basicdata{Path.DirectorySeparatorChar}";
+        private static string OUT_DIR = $"output{Path.DirectorySeparatorChar}";
+        public static string BASICDATA_DIR = $"{OUT_DIR}basicdata{Path.DirectorySeparatorChar}";
+        public static string LINKS_DIR = $"{OUT_DIR}links{Path.DirectorySeparatorChar}";
 
         private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 
@@ -55,42 +57,42 @@ namespace bvmfscrapper
             //{
 
 
-                Task.Run(async () =>
+            Task.Run(async () =>
+            {
+                List<ScrappedCompany> companies = null;
+                if (options.ShouldLoadCompanyList)
                 {
-                    List<ScrappedCompany> companies = null;
-                    if (options.ShouldLoadCompanyList)
-                    {
                         // step 1 - get companies basic data and links
                         log.Info("Iniciando a extração de empresas");
-                        log.Info("---------------------------------");
-                        companies = await BvmfScrapper.GetCompanies().ConfigureAwait(false);
-                        log.Info("---------------------------------");
-                        log.Info("Finalizada a extração de empresas");
-                        log.Info("*********************************");
-                    }
+                    log.Info("---------------------------------");
+                    companies = await BvmfScrapper.GetCompanies().ConfigureAwait(false);
+                    log.Info("---------------------------------");
+                    log.Info("Finalizada a extração de empresas");
+                    log.Info("*********************************");
+                }
 
-                    if (options.ShouldUpdateCompaniesIdDb)
-                    {
+                if (options.ShouldUpdateCompaniesIdDb)
+                {
                         // step 2 - save companies on database
                         log.Info("Iniciando a atualização de empresas no banco de dados");
-                        log.Info("---------------------------------");
-                        UpdateCompaniesInDatabase(companies);
-                        log.Info("---------------------------------");
-                        log.Info("Finalizada a atualização de empresas no banco de dados");
-                        log.Info("*********************************");
-                    }
+                    log.Info("---------------------------------");
+                    UpdateCompaniesInDatabase(companies);
+                    log.Info("---------------------------------");
+                    log.Info("Finalizada a atualização de empresas no banco de dados");
+                    log.Info("*********************************");
+                }
 
 
-                    if (options.ShouldExtractDocLinks)
-                    {
+                if (options.ShouldExtractDocLinks)
+                {
                         // step 3 - get doc links
                         log.Info("Iniciando a extração de links de docs das empresas");
-                        log.Info("---------------------------------");
-                        await ExtractDocLinksAsync(companies);
-                        log.Info("---------------------------------");
-                        log.Info("Finalizada a extração de links de docs");
-                        log.Info("*********************************");
-                    }
+                    log.Info("---------------------------------");
+                    await ExtractDocLinksAsync(companies);
+                    log.Info("---------------------------------");
+                    log.Info("Finalizada a extração de links de docs");
+                    log.Info("*********************************");
+                }
 
 
                     // aba Informações relevantes
@@ -128,14 +130,33 @@ namespace bvmfscrapper
 
         static async Task ExtractDocLinksAsync(List<ScrappedCompany> companies)
         {
-            if(companies == null)
+            if (companies == null)
             {
-                companies = ScrappedCompany.LoadCompaniesFromFiles(OUT_DIR);
+                companies = ScrappedCompany.LoadCompaniesFromFiles(BASICDATA_DIR);
             }
 
+            int counter = 1;
             foreach (var c in companies)
             {
-                Console.WriteLine($"Extraindo link da empresa {c.RazaoSocial}");
+                bool shouldExtract = true;
+                // Só deve extrair os links e/ou sobrepor o arquivo da empresa se a data de atualização(company.UltimaAtualizacao) for
+                // maior que a data do arquivo (FileTime)
+                // ou se o arquivo não existir
+
+                var info = new FileInfo(c.GetLinksFileName());
+                if (info.Exists && info.CreationTime > c.UltimaAtualizacao)
+                {
+                    shouldExtract = false;
+                }
+
+                if(!shouldExtract){
+                    Console.WriteLine($"Empresa {c.RazaoSocial} não necessita extrair links");
+                    log.Info($"Empresa {c.RazaoSocial} não necessita extrair links");
+                    continue;
+                }
+
+                Console.WriteLine($"Extraindo link da empresa {c.RazaoSocial} -- {counter}/{companies.Count}");
+                counter += 1;
                 log.Info($"Extraindo link da empresa {c.RazaoSocial}");
                 var doclinks = await BvmfDocSummaryScrapper.GetDocsInfoReferences(c);
                 //save links for company

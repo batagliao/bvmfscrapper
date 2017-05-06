@@ -29,7 +29,7 @@ namespace bvmfscrapper.scrappers
             var client = new HttpClient();            
             var url = $"{BvmfScrapper.BASE_URL}{BvmfScrapper.LIST_URL}ResumoDemonstrativosFinanceiros.aspx?codigoCvm={c.CodigoCVM}&idioma=pt-br";
 
-            var response = await client.GetStringAsync(url);
+            var response = await client.GetStringWithRetryAsync(url);
 
             var docLinks = new Dictionary<DocInfoType, List<DocLinkInfo>>();
 
@@ -39,18 +39,18 @@ namespace bvmfscrapper.scrappers
             // demonstrações financeiras padronizadas
             var dfps = await GetDocumentsLinks(DocInfoType.DFP, c);
             docLinks.Add(DocInfoType.DFP, dfps);
-            // Formulário de Referência
-            var fres = await GetDocumentsLinks(DocInfoType.FRE, c);
-            docLinks.Add(DocInfoType.FRE, fres);
-            // Formulário Cadastral
-            var fcas = await GetDocumentsLinks(DocInfoType.FCA, c);
-            docLinks.Add(DocInfoType.FCA, fcas);            
-            // Informe Trimestral de Securitzadora
-            var secs = await GetDocumentsLinks(DocInfoType.SEC, c);
-            docLinks.Add(DocInfoType.SEC, secs);
-            // Informações Anuais
-            var ians = await GetDocumentsLinks(DocInfoType.IAN, c);
-            docLinks.Add(DocInfoType.IAN, ians);
+            // // Formulário de Referência
+            // var fres = await GetDocumentsLinks(DocInfoType.FRE, c);
+            // docLinks.Add(DocInfoType.FRE, fres);
+            // // Formulário Cadastral
+            // var fcas = await GetDocumentsLinks(DocInfoType.FCA, c);
+            // docLinks.Add(DocInfoType.FCA, fcas);            
+            // // Informe Trimestral de Securitzadora
+            // var secs = await GetDocumentsLinks(DocInfoType.SEC, c);
+            // docLinks.Add(DocInfoType.SEC, secs);
+            // // Informações Anuais
+            // var ians = await GetDocumentsLinks(DocInfoType.IAN, c);
+            // docLinks.Add(DocInfoType.IAN, ians);
 
             return docLinks;
         }       
