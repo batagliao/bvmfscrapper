@@ -4,6 +4,9 @@ IDDocumento e Codigo CVM
 ITR
 3T2016 (30/09/2016)
 
+Composição do capital
+https://www.rad.cvm.gov.br/ENETCONSULTA/frmDadosComposicaoCapitalITR.aspx?Grupo=Dados+da+Empresa&Quadro=Composição+do+Capital&NomeTipoDocumento=ITR&Titulo=Composição do Capital&Empresa=FIBRIA&DataReferencia=30/09/2012&Versao=1&CodTipoDocumento=3&NumeroSequencialDocumento=21937&NumeroSequencialRegistroCvm=1857&CodigoTipoInstituicao=2
+
 Balan�o Patrimonial - Ativos (INDIVIDUAL)
 https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=2&Periodo=0&Grupo=DFs+Individuais&Quadro=Balan%c3%a7o+Patrimonial+Ativo&NomeTipoDocumento=ITR&Titulo=Balan%C3%A7o%20Patrimonial%20Ativo&Empresa=WLM%20IND%20COM&DataReferencia=30/09/2016&Versao=2&CodTipoDocumento=3&NumeroSequencialDocumento=61175&NumeroSequencialRegistroCvm=1780&CodigoTipoInstituicao=2
 Balan�o Patrimonial - Ativos (CONSOLIDADO)
@@ -43,3 +46,48 @@ https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Inform
 
 DFP
 CodTipoDocumento = 4
+
+
+
+
+ITR PRE 2010 - BOVESPA
+
+Acessar para obter cookies
+PARAMETROS
+- Razao
+- NomePregao
+- CodigoCVM
+- Data dd/MM/yyyy
+http://www2.bmfbovespa.com.br/dxw/FrDXW.asp?site=B&mercado=18&razao=FIBRIA%20CELULOSE%20S.A.&pregao=FIBRIA&ccvm=12793&data=30/06/2006&tipo=4
+
+Composição do capital
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWG1CompCapital.asp
+
+Balanço - Ativo (INDIVIDUAL)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=
+Balanço - Ativo (CONSOLIDADO)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=
+
+Balanço - Passivo (INDIVIDUAL)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=
+Balanço - Passivo (CONSOLIDADO)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=
+
+DRE (INDIVIDUAL)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=C
+Lucro Prejuizo por Ação (INDIVIDUAL)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWLucroPrejuizo.asp?TipoInfo=C
+
+DRE (CONSOLIDADO)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=T
+Lucro Prejuizo por Ação (CONSOLIDADO)
+http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWLucroPrejuizo.asp?TipoInfo=T
+
+DFP
+Acessar para obter cookies
+PARAMETROS
+- Razao
+- NomePregao
+- CodigoCVM
+- Data dd/MM/yyyy
+http://www2.bmfbovespa.com.br/dxw/FrDXW.asp?site=B&mercado=18&razao=FIBRIA%20CELULOSE%20S.A.&pregao=FIBRIA&ccvm=12793&data=31/12/2007&tipo=2
