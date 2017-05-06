@@ -42,10 +42,18 @@ namespace bvmfscrapper.data.repositories
 
                     if (empresaInDb != null) //update
                     {
+                        // atualiza somente se a data de atualização do banco for menor que a atual
+                        if (empresaInDb.UltimaAtualizacao >= company.UltimaAtualizacao)
+                        {
+                            log.Info($"Empresa {company.RazaoSocial} já está atualizada. Pulando");
+                            Console.WriteLine($"Empresa {company.RazaoSocial} já está atualizada. Pulando");
+                            continue;
+                        }
+
                         log.Info($"A empresa {company.RazaoSocial} já existe. Atualizando");
                         FillEmpresaWithCompany(empresaInDb, company);
                         db.Entry(empresaInDb).State = EntityState.Modified;
-                        UpdateExistentsTickers(empresaInDb, company);
+                        UpdateExistentsTickers(db, empresaInDb, company);
                     }
                     else
                     {
@@ -59,23 +67,32 @@ namespace bvmfscrapper.data.repositories
                         }
                         db.Empresas.Add(e);
                     }
-                    db.SaveChanges();                    
+                    db.SaveChanges();
                 }
             }
         }
 
-        private static void UpdateExistentsTickers(Empresa empresaInDb, ScrappedCompany company)
+        private static void UpdateExistentsTickers(DataContext db, Empresa empresaInDb, ScrappedCompany company)
         {
             log.Info($"Tickers = {string.Join(",", company.CodigosNegociacao)}");
 
+            // primeiro define todos os ticker como UNCHANGED, assim, os que não forem excluídos os adicionados
+            // não serão alterados
+            empresaInDb.Tickers.ForEach((ticker) =>
+            {
+                var entry = db.Entry(ticker);
+                if (entry != null)
+                    entry.State = EntityState.Unchanged;
+            });
+
             // tickers que existem n banco mas não em company > delete
             empresaInDb.Tickers.RemoveAll(t => !company.CodigosNegociacao.Contains(t.Nome));
-
+            db.RemoveRange(empresaInDb.Tickers.Where(t => !company.CodigosNegociacao.Contains(t.Nome)));
 
             foreach (var cod in company.CodigosNegociacao)
             {
                 // tickers que existem em company mas não no banco > insert
-                if (empresaInDb.Tickers.Any(t => t.Nome == cod) && !string.IsNullOrWhiteSpace(cod))
+                if (!empresaInDb.Tickers.Any(t => t.Nome == cod) && !string.IsNullOrWhiteSpace(cod))
                 {
                     empresaInDb.Tickers.Add(
                         new Ticker()

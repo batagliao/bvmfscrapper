@@ -1,21 +1,39 @@
 {
-   // Use IntelliSense to find out which attributes exist for C# debugging
-   // Use hover for the description of the existing attributes
-   // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-   "version": "0.2.0",
-   "configurations": [
-       {
-           "name": "Only Links",
-           "type": "coreclr",
-           "request": "launch",
-           "preLaunchTask": "build",
-           "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/bvmfscrapper.dll",
-           "args": ["--dont-extract-companies", "--dont-update-db"],
-           "cwd": "${workspaceRoot}",
-           "stopAtEntry": false,
-           "console": "internalConsole",
-           "internalConsoleOptions": "openOnSessionStart"
-       },
+    // Use IntelliSense to find out which attributes exist for C# debugging
+    // Use hover for the description of the existing attributes
+    // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Only Links",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/bvmfscrapper.dll",
+            "args": [
+                "--dont-extract-companies",
+                "--dont-update-db"
+            ],
+            "cwd": "${workspaceRoot}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart"
+        },
+        {
+            "name": "Only DB",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceRoot}/bin/Debug/netcoreapp1.1/bvmfscrapper.dll",
+            "args": [
+                "--dont-extract-companies",
+                "--dont-extract-doc-links"
+            ],
+            "cwd": "${workspaceRoot}",
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "internalConsoleOptions": "openOnSessionStart"            
+        },
         {
             "name": ".NET Core Launch (console)",
             "type": "coreclr",

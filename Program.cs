@@ -27,6 +27,8 @@ namespace bvmfscrapper
         // MARKET DATA
         // ftp://ftp.bmf.com.br/MarketData/
 
+        // Encontrar uma fonte de dados HF (High Fequency)
+
         // isso pode ser interessante
         // https://github.com/pedrocordeiro/bovespa
 
@@ -122,7 +124,7 @@ namespace bvmfscrapper
         {
             if (companies == null)
             {
-                companies = ScrappedCompany.LoadCompaniesFromFiles(OUT_DIR);
+                companies = ScrappedCompany.LoadCompaniesFromFiles(BASICDATA_DIR);
             }
 
             EmpresaRepository.InsertOrUpdate(companies);
