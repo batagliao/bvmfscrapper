@@ -93,5 +93,7 @@ namespace bvmfscrapper.models
             return companies;
         }
 
+        
+
     }
 }

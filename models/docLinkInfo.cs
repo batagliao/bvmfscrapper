@@ -122,5 +122,6 @@ namespace bvmfscrapper.models
             var num = link.Substring(start, iend - start);
             return Convert.ToInt32(num);
         }
+
     }
 }

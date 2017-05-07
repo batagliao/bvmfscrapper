@@ -54,7 +54,6 @@ namespace bvmfscrapper
 
             log.Info("Aplicação iniciada. Log configurado");
 
-            var options = Options.ParseOptions(args);
             //try
             //{
 
@@ -62,10 +61,10 @@ namespace bvmfscrapper
             Task.Run(async () =>
             {
                 List<ScrappedCompany> companies = null;
-                if (options.ShouldLoadCompanyList)
+                if (Options.Instance.LoadCompanyList)
                 {
-                        // step 1 - get companies basic data and links
-                        log.Info("Iniciando a extração de empresas");
+                    // step 1 - get companies basic data and links
+                    log.Info("Iniciando a extração de empresas");
                     log.Info("---------------------------------");
                     companies = await BvmfScrapper.GetCompanies().ConfigureAwait(false);
                     log.Info("---------------------------------");
@@ -73,10 +72,10 @@ namespace bvmfscrapper
                     log.Info("*********************************");
                 }
 
-                if (options.ShouldUpdateCompaniesIdDb)
+                if (Options.Instance.UpdateCompaniesIdDb)
                 {
-                        // step 2 - save companies on database
-                        log.Info("Iniciando a atualização de empresas no banco de dados");
+                    // step 2 - save companies on database
+                    log.Info("Iniciando a atualização de empresas no banco de dados");
                     log.Info("---------------------------------");
                     UpdateCompaniesInDatabase(companies);
                     log.Info("---------------------------------");
@@ -85,10 +84,10 @@ namespace bvmfscrapper
                 }
 
 
-                if (options.ShouldExtractDocLinks)
+                if (Options.Instance.ExtractDocLinks)
                 {
-                        // step 3 - get doc links
-                        log.Info("Iniciando a extração de links de docs das empresas");
+                    // step 3 - get doc links
+                    log.Info("Iniciando a extração de links de docs das empresas");
                     log.Info("---------------------------------");
                     await ExtractDocLinksAsync(companies);
                     log.Info("---------------------------------");
@@ -96,23 +95,31 @@ namespace bvmfscrapper
                     log.Info("*********************************");
                 }
 
-                
+                if (Options.Instance.ExtractFinData)
+                {
+                    // step 4 - extract fin data
+                    log.Info("Iniciando a extração de dados financeiros das empresas");
+                    log.Info("---------------------------------");
+                    await ExtractFinancialDataAsync(companies);
+                    log.Info("---------------------------------");
+                    log.Info("Finalizada a extração de dados financeiros");
+                    log.Info("*********************************");
+                }
 
+                // aba Informações relevantes
+                // aba Eventos Corporativos
+                // - proventos em dinheiro
+                // - proventos em ativos
+                // - subscrição
+                // - grupamento
+                // - desdobramento
 
-                    // aba Informações relevantes
-                    // aba Eventos Corporativos
-                    // - proventos em dinheiro
-                    // - proventos em ativos
-                    // - subscrição
-                    // - grupamento
-                    // - desdobramento
+                // Históricos de cotações
 
-                    // Históricos de cotações
+                // historico cotacoes
+                // http://bvmf.bmfbovespa.com.br/sig/FormConsultaMercVista.asp?strTipoResumo=RES_MERC_VISTA&strSocEmissora=ITSA&strDtReferencia=03-2017&strIdioma=P&intCodNivel=2&intCodCtrl=160#
 
-                    // historico cotacoes
-                    // http://bvmf.bmfbovespa.com.br/sig/FormConsultaMercVista.asp?strTipoResumo=RES_MERC_VISTA&strSocEmissora=ITSA&strDtReferencia=03-2017&strIdioma=P&intCodNivel=2&intCodCtrl=160#
-
-                }).GetAwaiter().GetResult();
+            }).GetAwaiter().GetResult();
 
             //}
             //catch (Exception ex)
@@ -153,7 +160,8 @@ namespace bvmfscrapper
                     shouldExtract = false;
                 }
 
-                if(!shouldExtract){
+                if (!shouldExtract)
+                {
                     Console.WriteLine($"Empresa {c.RazaoSocial} não necessita extrair links");
                     log.Info($"Empresa {c.RazaoSocial} não necessita extrair links");
                     continue;
@@ -166,6 +174,20 @@ namespace bvmfscrapper
                 //save links for company
                 c.SaveDocLinks(doclinks);
             }
+        }
+
+        static async Task ExtractFinancialDataAsync(List<ScrappedCompany> companies)
+        {
+            if (companies == null)
+            {
+                companies = ScrappedCompany.LoadCompaniesFromFiles(BASICDATA_DIR);
+            }
+
+            foreach(var company in companies)
+            {
+                await FinancialDataScrapper.ExtractFinancialInfo(company);
+            }
+                        
         }
     }
 }

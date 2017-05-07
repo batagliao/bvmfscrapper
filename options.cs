@@ -1,37 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace bvmfscrapper
 {
     public class Options
-    {
-        const string ARG_DONT_EXTRACT_COMPANY = "--dont-extract-companies";
-        const string ARG_DONT_UPDATE_DB = "--dont-update-db";
-        const string ARG_DONT_EXTRACT_DOC_LINKS = "--dont-extract-doc-links";
-        const string ARG_DONT_EXTRACT_ITR = "--dont-extract-itr";
+    {       
+        public static Options Instance { get; protected set; }
 
-        public static Options ParseOptions(string[] args)
+        // Carrega arquivos de opções, caso exista
+        static Options()
         {
-            /*
-             * args:
-             * --dont-extract-companies
-             * --dont-update-db
-             * --dont-extract-doc-links
-             */
-            var option = new Options();
-            option.ShouldLoadCompanyList = !args.Contains(ARG_DONT_EXTRACT_COMPANY);
-            option.ShouldUpdateCompaniesIdDb = !args.Contains(ARG_DONT_UPDATE_DB);
-            option.ShouldExtractDocLinks = !args.Contains(ARG_DONT_EXTRACT_DOC_LINKS);
-            option.ShouldExtractITR = !args.Contains(ARG_DONT_EXTRACT_ITR);
-            return option;
+            string file = "options.json";
+            if(File.Exists(file))
+            {
+                string json = File.ReadAllText(file);
+                var optionsInstance = JsonConvert.DeserializeObject<Options>(json);
+                Instance = optionsInstance;
+            }else{
+                Instance = new Options();
+            }
         }
-
-
-        public bool ShouldLoadCompanyList { get; set; } = true;
-        public bool ShouldUpdateCompaniesIdDb { get; set; } = true;
-        public bool ShouldExtractDocLinks { get; set; } = true;
-        public bool ShouldExtractITR { get; set; } = true;
+       
+        public bool LoadCompanyList { get; set; } = true;
+        public bool UpdateCompaniesIdDb { get; set; } = true;
+        public bool ExtractDocLinks { get; set; } = true;
+        public bool ExtractFinData { get; set; } = true;
     }
 }

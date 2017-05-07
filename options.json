@@ -1,0 +1,6 @@
+{
+    "LoadCompanyList": true,
+    "UpdateCompaniesIdDb": true,
+    "ExtractDocLinks": true,
+    "ExtractFinData": true
+}

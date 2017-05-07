@@ -29,7 +29,15 @@ namespace bvmfscrapper.scrappers
             var itrs = links[DocInfoType.ITR];
             foreach(var itr in itrs)
             {
-                var itrParser = CreateItrScrapper(itr);
+                //TODO: check before everything if it needs to be extracted
+                var itrScrapper = CreateItrScrapper(itr, company);
+                await itrScrapper.ScrapComposicaoCapital(itr);
+                await itrScrapper.ScrapBalancoIndividualAtivo(itr);
+                await itrScrapper.ScrapBalancoIndividualPassivo(itr);
+                await itrScrapper.ScrapDREIndividual(itr);
+                await itrScrapper.ScrapBalancoConsolidadoAtivo(itr);
+                await itrScrapper.ScrapBalancoConsolidadoPassivo(itr);
+                await itrScrapper.ScrapDREConsolidado(itr);
             }
             
 
@@ -40,24 +48,32 @@ namespace bvmfscrapper.scrappers
             var dfps = links[DocInfoType.DFP];
             foreach (var dfp in dfps)
             {
-                var itrParser = CreateDFPScrapper(dfp);
+                //TODO: check before everything if it needs to be extracted
+                var dfpScrapper = CreateDFPScrapper(dfp, company);
+                await dfpScrapper.ScrapComposicaoCapital(dfp);
+                await dfpScrapper.ScrapBalancoIndividualAtivo(dfp);
+                await dfpScrapper.ScrapBalancoIndividualPassivo(dfp);
+                await dfpScrapper.ScrapDREIndividual(dfp);
+                await dfpScrapper.ScrapBalancoConsolidadoAtivo(dfp);
+                await dfpScrapper.ScrapBalancoConsolidadoPassivo(dfp);
+                await dfpScrapper.ScrapDREConsolidado(dfp);
             }
         }
 
-        private static IDfpScrapper CreateDFPScrapper(DocLinkInfo dfp)
+        private static IDfpScrapper CreateDFPScrapper(DocLinkInfo dfp, ScrappedCompany company)
         {
             if (dfp.LinkType == LinkTypeEnum.Bovespa)
-                return new BovespaDfpScrapper();
+                return new BovespaDfpScrapper(company);
 
-            return new CvmDfpScrapper();
+            return new CvmDfpScrapper(company);
         }
 
-        private static IItrScrapper CreateItrScrapper(DocLinkInfo itr)
+        private static IItrScrapper CreateItrScrapper(DocLinkInfo itr, ScrappedCompany company)
         {
             if(itr.LinkType == LinkTypeEnum.Bovespa)
-                return new BovespaItrScrapper();
+                return new BovespaItrScrapper(company);
 
-            return new CvmItrScrapper();
+            return new CvmItrScrapper(company);
         }
 
         private static Dictionary<DocInfoType, List<DocLinkInfo>> LoadLinks(ScrappedCompany company)

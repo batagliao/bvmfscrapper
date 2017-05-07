@@ -29,7 +29,7 @@ namespace bvmfscrapper
         {
             log.Info($"Salvando arquivo de links para a empresa {c.RazaoSocial}");
 
-            var filename = c.GetLinksFileName();            
+            var filename = c.GetLinksFileName();
 
             log.Info($"File={filename}");
 
@@ -42,6 +42,14 @@ namespace bvmfscrapper
             }
 
             File.WriteAllText(filename, json);
+        }
+
+        public static Dictionary<DocInfoType, List<DocLinkInfo>> LoadDocLinksForCompany(this ScrappedCompany company)
+        {
+            var filename = company.GetLinksFileName();
+            log.Info($"Carregando links da empresa {company.RazaoSocial} - {filename}");
+            string json = File.ReadAllText(filename);
+            return JsonConvert.DeserializeObject<Dictionary<DocInfoType, List<DocLinkInfo>>>(json);
         }
     }
 }
