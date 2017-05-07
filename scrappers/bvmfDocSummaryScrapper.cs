@@ -54,59 +54,7 @@ namespace bvmfscrapper.scrappers
 
             return docLinks;
         }       
-
-        // private static Dictionary<DocInfoType, string> GetSectionHistoricLinks(string html)
-        // {
-        //     // ITR - Informaçõe Trimestrais                
-        //     // DFP - Demostrações Financeiras Padronizadas (Pré 2010; Pós 2010)
-        //     // Formulário de Referência
-        //     // Formulário Cadastral
-        //     // Informações Anuais
-        //     Dictionary<DocInfoType, string> histLinksDict = new Dictionary<DocInfoType, string>();
-
-        //     var parser = new HtmlParser();
-        //     var doc = parser.Parse(html);
-
-        //     var sections = doc.QuerySelectorAll("h3").OfType<IElement>();
-
-        //     foreach(var section in sections)
-        //     {
-        //         var section_title = section.TextContent;
-
-        //         var list = GetSectionList(section);
-        //         var divs = list.Children.Where(e => e.TagName == "div" && e.Attributes["class"].Value != "divider");
-
-        //         // Historico é sempre o último
-        //         var histDiv = divs.Last();
-        //         var a = histDiv.QuerySelector("a");
-        //         var link = a.Attributes["href"].Value;
-        //         var sectionType = GetSectionType(section.TextContent);
-        //         histLinksDict.Add(sectionType, link);
-        //     }
-
-        //     return histLinksDict;
-        // }
-
-        // private static DocInfoType GetSectionType(string title){
-        //     var lowered = title.ToLower();
-        //     if(lowered.Contains("informações trimestrais")){
-        //         return DocInfoType.ITR;
-        //     }
-        //     if(lowered.Contains("demonstrações financeiras padronizadas")){
-        //         return DocInfoType.DFP;
-        //     }
-        //     if(lowered.Contains("formulário de referência")){
-        //         return DocInfoType.FRE;
-        //     }
-        //     if(lowered.Contains("formulário cadastral")){
-        //         return DocInfoType.FCA;
-        //     }
-        //     if(lowered.Contains("informações anuais")){
-        //         return DocInfoType.IAN;
-        //     }
-        //     return DocInfoType.Unknow;
-        // }
-
+        
         private static async Task<List<DocLinkInfo>> GetDocumentsLinks(DocInfoType docType, ScrappedCompany c)
         {
             log.Info($"Obtendo documentos do tipo {docType} - {c.RazaoSocial}");
@@ -114,6 +62,8 @@ namespace bvmfscrapper.scrappers
             var histUrl = $"HistoricoFormularioReferencia.aspx?codigoCVM={c.CodigoCVM}&tipo={docType.ToString().ToLower()}&ano=0";
 
             var docs = new List<DocLinkInfo>();
+
+            //TODO: guardar a data de envio do documento
 
             // name = key
             // kink = value

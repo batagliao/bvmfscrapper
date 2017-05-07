@@ -20,7 +20,7 @@ namespace bvmfscrapper
 
             var content = new FormUrlEncodedContent(data);
             var response = await client.PostAsync(url, content);
-            if(response.IsSuccessStatusCode)
+            if (response.IsSuccessStatusCode)
             {
                 return await response.Content.ReadAsStringAsync();
             }
@@ -42,6 +42,18 @@ namespace bvmfscrapper
             retryInterval: TimeSpan.FromSeconds(1),
             retryCount: 3
             );
+        }
+
+        public static async Task GetCookies(string url)
+        {
+            var container = new CookieContainer();
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = container;
+
+            var client = new HttpClient(handler);
+            var response = await client.GetAsync(url);
+            var cookies = container.GetCookies(new Uri(url));
+
         }
 
     }
