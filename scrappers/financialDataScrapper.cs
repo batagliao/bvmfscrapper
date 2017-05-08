@@ -7,6 +7,8 @@ using bvmfscrapper.scrappers.findata;
 using log4net;
 using Newtonsoft.Json;
 using static bvmfscrapper.models.DocLinkInfo;
+using System.Linq;
+using MoreLinq;
 
 namespace bvmfscrapper.scrappers
 {
@@ -27,6 +29,8 @@ namespace bvmfscrapper.scrappers
             Console.WriteLine($"Extraindo informações de ITR da empresa {company.RazaoSocial}");
             log.Info($"Extraindo informações de ITR da empresa {company.RazaoSocial}");
             var itrs = links[DocInfoType.ITR];
+            itrs = RemoveDuplicates(itrs);
+
             foreach(var itr in itrs)
             {
                 //TODO: check before everything if it needs to be extracted
@@ -46,6 +50,7 @@ namespace bvmfscrapper.scrappers
             Console.WriteLine($"Extraindo informações de DFP da empresa {company.RazaoSocial}");
             log.Info($"Extraindo informações de DFP da empresa {company.RazaoSocial}");
             var dfps = links[DocInfoType.DFP];
+            dfps = RemoveDuplicates(dfps);
             foreach (var dfp in dfps)
             {
                 //TODO: check before everything if it needs to be extracted
@@ -58,6 +63,28 @@ namespace bvmfscrapper.scrappers
                 await dfpScrapper.ScrapBalancoConsolidadoPassivo(dfp);
                 await dfpScrapper.ScrapDREConsolidado(dfp);
             }
+        }
+
+        private static List<DocLinkInfo> RemoveDuplicates(List<DocLinkInfo> links)
+        {
+            List<DocLinkInfo> filteredLinks = new List<DocLinkInfo>();
+            // primeiro encontra os duplicados agrupando
+            var groups = links.GroupBy(l => l.Data);
+
+            // verifica os grupos para encontrar os duplicados e remove o mais antigo da lista principal
+            foreach (var group in groups)
+            {
+                if(group.Count() > 0)
+                {
+                    var itemPermanece = group.MaxBy(g => g.DataApresentacao);
+                    filteredLinks.Add(itemPermanece);
+                }
+                else
+                {
+                    filteredLinks.Add(group.First());
+                }
+            }
+            return filteredLinks;
         }
 
         private static IDfpScrapper CreateDFPScrapper(DocLinkInfo dfp, ScrappedCompany company)

@@ -7,13 +7,15 @@ using System.Threading.Tasks;
 using bvmfscrapper.models;
 using log4net;
 using System.IO;
+using AngleSharp.Parser.Html;
+using AngleSharp.Dom.Html;
 
 namespace bvmfscrapper.scrappers.findata
 {
     public class BovespaItrScrapper : IItrScrapper
     {
         private ScrappedCompany company;
-        private static readonly ILog log = LogManager.GetLogger(typeof(CompanyExtensions));
+        private static readonly ILog log = LogManager.GetLogger(typeof(BovespaItrScrapper));
 
         public BovespaItrScrapper(ScrappedCompany company)
         {
@@ -95,7 +97,6 @@ namespace bvmfscrapper.scrappers.findata
         public async Task ScrapComposicaoCapital(DocLinkInfo link)
         {
             log.Info($"Obtendo Composição de Capital - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
 
             bool shouldExtract = true;
             // se não existir o arquivo ou
@@ -120,9 +121,8 @@ namespace bvmfscrapper.scrappers.findata
             var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWG1CompCapital.asp";
             var content = await GetStringWithCookiesAsync(cookies, url);
 
-            ParseComposicaoCapital(content);
-
-            //TODO: save file
+            var capital = ParseComposicaoCapital(content);
+            capital.Save(fileinfo.FullName);
         }
 
 
@@ -205,10 +205,73 @@ namespace bvmfscrapper.scrappers.findata
         }
 
 
-        private void ParseComposicaoCapital(string content)
+        private ComposicaoCapital ParseComposicaoCapital(string content)
         {
-            // TODO: Implement
-            throw new NotImplementedException();
+            var parser = new HtmlParser();
+            var doc = parser.Parse(content);
+
+            ComposicaoCapital capital = new ComposicaoCapital();
+            var tds_titles = doc.QuerySelectorAll("td.label");
+
+            var td_multiplicador = tds_titles[0];
+            var td_date = tds_titles[2];
+
+            if (td_multiplicador.TextContent.Contains("Mil") || td_multiplicador.TextContent.Contains("Milhares"))
+            {
+                capital.Multiplicador = 1000;
+            }
+            if(td_multiplicador.TextContent.Contains("Milhão") || td_multiplicador.TextContent.Contains("Milhões"))
+            {
+                capital.Multiplicador = 1000 * 1000;
+            }
+
+            var tr_title = td_multiplicador.ParentElement;
+            // walk the rows
+
+            var tr = tr_title.NextElementSibling as IHtmlTableRowElement;
+            if (tr.Cells[0].TextContent.Contains("Integralizado"))
+            {
+                tr = tr.NextElementSibling as IHtmlTableRowElement;
+            }
+
+            // Ordinárias mercado
+            if (tr.Cells[0].TextContent.Contains("Ordinárias"))
+            {
+                var text = tr.Cells[1].TextContent.Trim();
+                capital.OrdinariasCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToInt32(text));
+                tr = tr.NextElementSibling as IHtmlTableRowElement;
+            }
+
+            // Preferenciais mercado
+            if (tr.Cells[0].TextContent.Contains("Preferenciais"))
+            {
+                var text = tr.Cells[1].TextContent.Trim();
+                capital.PrefernciaisCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToInt32(text));
+                tr = tr.NextElementSibling as IHtmlTableRowElement;
+            }
+
+            if (tr.Cells[0].TextContent.Contains("Tesouraria"))
+            {
+                tr = tr.NextElementSibling as IHtmlTableRowElement;
+            }
+
+            // Ordinárias tesouraria
+            if (tr.Cells[0].TextContent.Contains("Ordinárias"))
+            {
+                var text = tr.Cells[1].TextContent.Trim();
+                capital.OrdinariasTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToInt32(text));
+                tr = tr.NextElementSibling as IHtmlTableRowElement;
+            }
+
+            // Preferenciais tesouraria
+            if (tr.Cells[0].TextContent.Contains("Preferenciais"))
+            {
+                var text = tr.Cells[1].TextContent.Trim();
+                capital.PreferenciaisTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToInt32(text));
+                //tr = tr.NextElementSibling as IHtmlTableRowElement;
+            }
+
+            return capital;
         }
 
     }
