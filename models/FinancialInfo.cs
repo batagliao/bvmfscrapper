@@ -10,12 +10,38 @@ namespace bvmfscrapper.models
         Trimestral
     }
 
+    public enum FinInfoCategoria
+    {
+        Ativo,
+        Passivo,
+        DRE
+    }
+
+    public enum FinInfoTipo
+    {
+        Individual,
+        Consolidado
+    }
+
     public class FinancialInfo
     {
         public Periodo Periodo { get; set; }
 
-        public string IdentificadorPeriodo { get; set; }
+        public DateTime Date { get; set; }
 
-        public string Link { get; set; }
+        public int Multiplicador { get; set; }
+
+        public List<FinancialItem> Items { get; set; } = new List<FinancialItem>();
+        
+        public FinInfoCategoria Categoria { get; set; }
+
+        public FinInfoTipo Tipo { get; set; }
+    }
+
+    public class FinancialItem
+    {
+        public string Conta { get; set; }
+        public string Nome { get; set; }
+        public decimal Valor { get; set; }
     }
 }
