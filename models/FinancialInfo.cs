@@ -4,12 +4,7 @@ using System.Text;
 
 namespace bvmfscrapper.models
 {
-    public enum Periodo
-    {
-        Anual,
-        Trimestral
-    }
-
+   
     public enum FinInfoCategoria
     {
         Ativo,
@@ -25,9 +20,7 @@ namespace bvmfscrapper.models
 
     public class FinancialInfo
     {
-        public Periodo Periodo { get; set; }
-
-        public DateTime Date { get; set; }
+        public DateTime Data { get; set; }
 
         public int Multiplicador { get; set; }
 

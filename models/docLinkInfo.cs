@@ -12,7 +12,8 @@ namespace bvmfscrapper.models
             Bovespa,
             CVM
         }
-        public DateTime? Date { get; protected set; }
+        public DateTime Data { get; protected set; }
+        public DateTime DataApresentacao { get; protected set; }
         public string Link { get; protected set; }
         public string Title { get; protected set; }
         public DocInfoType DocType { get; protected set; }
@@ -23,7 +24,8 @@ namespace bvmfscrapper.models
         {
             Title = a.Text;
             DocType = doctype;
-            Date = ParseDocLinkDate(a.Text);
+            Data = ParseDocLinkDate(a.Text);
+            DataApresentacao = ParseDataApresentacao(a);
             Link = ParseDocLinkHref(a.Href);
             LinkType = ParseLinkType(Link);
             if (LinkType == LinkTypeEnum.CVM)
@@ -32,7 +34,14 @@ namespace bvmfscrapper.models
             }
         }
 
-
+        private DateTime ParseDataApresentacao(IHtmlAnchorElement a)
+        {
+            // writetxt(MontaHint('30/09/2003','Legislação Societária','Apresentação  ','29/10/2003 13:07','P'));
+            var javascript = a.GetAttribute("onmouseover");
+            var items = javascript.Split(',');                    
+            var data = DateTime.ParseExact(items[3], "dd/MM/yyyy HH:mm", new CultureInfo("pt-BR"));
+            return data;
+        }
 
         private string ParseDocLinkHref(string value)
         {
@@ -78,7 +87,7 @@ namespace bvmfscrapper.models
             return value.Substring(start, length);
         }
 
-        private DateTime? ParseDocLinkDate(string text)
+        private DateTime ParseDocLinkDate(string text)
         {
             var trimmed = text.Trim();
             switch (DocType)
@@ -89,7 +98,7 @@ namespace bvmfscrapper.models
                     var datetext = text.Substring(0, 10);
                     return DateTime.ParseExact(datetext, "dd/MM/yyyy", new CultureInfo("pt-BR"));
                 default:
-                    return null;
+                    return DateTime.MinValue;
             }
         }
 

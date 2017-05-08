@@ -18,6 +18,7 @@ namespace bvmfscrapper
         private static string OUT_DIR = $"output{Path.DirectorySeparatorChar}";
         public static string BASICDATA_DIR = $"{OUT_DIR}basicdata{Path.DirectorySeparatorChar}";
         public static string LINKS_DIR = $"{OUT_DIR}links{Path.DirectorySeparatorChar}";
+        public static string FINDATA_DIR = $"{OUT_DIR}findata{Path.DirectorySeparatorChar}";
 
         private static readonly ILog log = LogManager.GetLogger(typeof(Program));
 

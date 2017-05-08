@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using bvmfscrapper.models;
 using log4net;
+using System.IO;
 
 namespace bvmfscrapper.scrappers.findata
 {
@@ -18,10 +19,10 @@ namespace bvmfscrapper.scrappers.findata
         {
             this.company = company;
         }
-            
+
         public async Task ScrapBalancoConsolidadoAtivo(DocLinkInfo link)
         {
-            log.Info($"Obtendo Balanço consolidado (ativo) - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo Balanço consolidado (ativo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
 
             // deve primeiro acessar a url para obter os cookies
@@ -36,7 +37,7 @@ namespace bvmfscrapper.scrappers.findata
 
         public async Task ScrapBalancoIndividualAtivo(DocLinkInfo link)
         {
-            log.Info($"Obtendo Balanço individual (ativo) - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo Balanço individual (ativo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
 
             // deve primeiro acessar a url para obter os cookies
@@ -57,7 +58,7 @@ namespace bvmfscrapper.scrappers.findata
 
         public async Task ScrapBalancoConsolidadoPassivo(DocLinkInfo link)
         {
-            log.Info($"Obtendo Balanço consolidado (passivo) - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo Balanço consolidado (passivo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
 
             // deve primeiro acessar a url para obter os cookies
@@ -72,7 +73,7 @@ namespace bvmfscrapper.scrappers.findata
 
         public async Task ScrapBalancoIndividualPassivo(DocLinkInfo link)
         {
-            log.Info($"Obtendo Balanço individual (passivo) - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo Balanço individual (passivo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
 
             // deve primeiro acessar a url para obter os cookies
@@ -93,13 +94,31 @@ namespace bvmfscrapper.scrappers.findata
 
         public async Task ScrapComposicaoCapital(DocLinkInfo link)
         {
-            log.Info($"Obtendo Composição de Capital - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo Composição de Capital - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
+
+            bool shouldExtract = true;
+            // se não existir o arquivo ou
+            // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
+            var fileinfo = new FileInfo(company.GetFinDataCapitalFileName(link));
+            log.Info("Verificando se é necessário extrair Composição do Capital");
+            if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
+            {
+                shouldExtract = false;
+            }
+
+            if (!shouldExtract)
+            {
+                Console.WriteLine($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Capital Consolidado");
+                log.Info($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Capital Consolidado");
+                return;
+            }
+            
 
             // deve primeiro acessar a url para obter os cookies
             var cookies = await GetCookiesForBovespaAsync(link);
             var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWG1CompCapital.asp";
-            var content = GetStringWithCookiesAsync(cookies, url);
+            var content = await GetStringWithCookiesAsync(cookies, url);
 
             ParseComposicaoCapital(content);
 
@@ -110,7 +129,7 @@ namespace bvmfscrapper.scrappers.findata
 
         public async Task ScrapDREConsolidado(DocLinkInfo link)
         {
-            log.Info($"Obtendo DRE Consolidado - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo DRE Consolidado - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
 
             // deve primeiro acessar a url para obter os cookies
@@ -125,7 +144,7 @@ namespace bvmfscrapper.scrappers.findata
 
         public async Task ScrapDREIndividual(DocLinkInfo link)
         {
-            log.Info($"Obtendo DRE Individual - {company.RazaoSocial} - {link.Date.Value.ToString("dd/MM/yyyy")}");
+            log.Info($"Obtendo DRE Individual - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             //TODO: check if it needs to be scrapped
 
             // deve primeiro acessar a url para obter os cookies
@@ -149,7 +168,7 @@ namespace bvmfscrapper.scrappers.findata
             // codificar para url
             var razao = WebUtility.UrlEncode(company.RazaoSocial);
             var pregao = WebUtility.UrlEncode(company.NomePregao);
-            var data = info.Date.Value.ToString("dd/MM/yyyy");
+            var data = info.Data.ToString("dd/MM/yyyy");
 
             var url = $"http://www2.bmfbovespa.com.br/dxw/FrDXW.asp?site=B&mercado=18&razao={razao}&pregao={pregao}&ccvm={company.CodigoCVM}&data={data}&tipo=";
             log.Info($"Acessando url para obtenção dos cookies");
@@ -186,7 +205,7 @@ namespace bvmfscrapper.scrappers.findata
         }
 
 
-        private void ParseComposicaoCapital(Task<string> content)
+        private void ParseComposicaoCapital(string content)
         {
             // TODO: Implement
             throw new NotImplementedException();

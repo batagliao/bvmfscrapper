@@ -25,6 +25,22 @@ namespace bvmfscrapper
             return path;
         }
 
+        public static string GetFinDataFileName(this ScrappedCompany c, DocLinkInfo link, FinInfoCategoria categoria, FinInfoTipo tipo)
+        {
+            string date = link.Data.ToString("ddMMyyyy");
+            string file = $"{c.CodigoCVM}.{link.DocType}.{date}.{categoria}.{tipo}.json";
+            string path = $"{Program.FINDATA_DIR}";
+            return Path.Combine(path, file);
+        }
+
+        public static string GetFinDataCapitalFileName(this ScrappedCompany c, DocLinkInfo link)
+        {
+            string date = link.Data.ToString("ddMMyyyy");
+            string file = $"{c.CodigoCVM}.{link.DocType}.{date}.CapitalConsolidado.json";
+            string path = $"{Program.FINDATA_DIR}";
+            return Path.Combine(path, file);
+        }
+
         public static void SaveDocLinks(this ScrappedCompany c, Dictionary<DocInfoType, List<DocLinkInfo>> links)
         {
             log.Info($"Salvando arquivo de links para a empresa {c.RazaoSocial}");
