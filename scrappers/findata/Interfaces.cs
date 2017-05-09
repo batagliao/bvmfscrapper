@@ -6,12 +6,9 @@ namespace bvmfscrapper.scrappers.findata
     public interface IFinDataScrapper
     {
         Task ScrapComposicaoCapital(DocLinkInfo link);
-        Task ScrapBalancoIndividualAtivo(DocLinkInfo link);
-        Task ScrapBalancoIndividualPassivo(DocLinkInfo link);
-        Task ScrapDREIndividual(DocLinkInfo link);
-        Task ScrapBalancoConsolidadoAtivo(DocLinkInfo link);
-        Task ScrapBalancoConsolidadoPassivo(DocLinkInfo link);
-        Task ScrapDREConsolidado(DocLinkInfo link);
+        Task ScrapBalancoAtivo(DocLinkInfo link, FinInfoTipo tipo);
+        Task ScrapBalancoPassivo(DocLinkInfo link, FinInfoTipo tipo);
+        Task ScrapDRE(DocLinkInfo link, FinInfoTipo tipo);
     }
 
     public interface IItrScrapper : IFinDataScrapper

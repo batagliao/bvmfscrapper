@@ -1,5 +1,8 @@
-﻿using System;
+﻿using log4net;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace bvmfscrapper.models
@@ -20,6 +23,8 @@ namespace bvmfscrapper.models
 
     public class FinancialInfo
     {
+        private static readonly ILog log = LogManager.GetLogger(typeof(FinancialInfo));
+
         public DateTime Data { get; set; }
 
         public int Multiplicador { get; set; }
@@ -29,6 +34,13 @@ namespace bvmfscrapper.models
         public FinInfoCategoria Categoria { get; set; }
 
         public FinInfoTipo Tipo { get; set; }
+
+        public void Save(string filename)
+        {
+            log.Info($"Salvando arquivo de {Categoria} {Tipo} - {filename}");
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            File.WriteAllText(filename, json);
+        }
     }
 
     public class FinancialItem

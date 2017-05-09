@@ -9,6 +9,7 @@ using log4net;
 using System.IO;
 using AngleSharp.Parser.Html;
 using AngleSharp.Dom.Html;
+using System.Globalization;
 
 namespace bvmfscrapper.scrappers.findata
 {
@@ -22,76 +23,81 @@ namespace bvmfscrapper.scrappers.findata
             this.company = company;
         }
 
-        public async Task ScrapBalancoConsolidadoAtivo(DocLinkInfo link)
+        public async Task ScrapBalancoAtivo(DocLinkInfo link, FinInfoTipo tipo)
         {
-            log.Info($"Obtendo Balanço consolidado (ativo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
+            log.Info($"Obtendo Balanço Ativo {tipo} - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
+
+            bool shouldExtract = true;
+            // se não existir o arquivo ou
+            // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
+            var fileinfo = new FileInfo(company.GetFinDataFileName(link, FinInfoCategoria.Passivo, tipo));
+            log.Info($"Verificando se é necessário extrair Balanço Ativo {tipo}");
+            if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
+            {
+                shouldExtract = false;
+            }
+
+            if (!shouldExtract)
+            {
+                Console.WriteLine($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Balanço Ativo {tipo}");
+                log.Info($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Balanço Ativo {tipo}");
+                return;
+            }
 
             // deve primeiro acessar a url para obter os cookies
             var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=01 - Ativo";
-            var content = GetStringWithCookiesAsync(cookies, url);
+            var url = "";
+            if (tipo == FinInfoTipo.Individual)
+            {
+                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=01 - Ativo";
+            }
+            else
+            {
+                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=01%20-%20Ativo";
+            }
+            var content = await GetStringWithCookiesAsync(cookies, url);
 
-            ParseBalancoAtivo(content);
-
-            //TODO: save file
+            var ativo = ParseFinInfo(content, FinInfoCategoria.Ativo, tipo);
+            ativo.Save(fileinfo.FullName);
         }
 
-        public async Task ScrapBalancoIndividualAtivo(DocLinkInfo link)
+
+        public async Task ScrapBalancoPassivo(DocLinkInfo link, FinInfoTipo tipo)
         {
-            log.Info($"Obtendo Balanço individual (ativo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
+            log.Info($"Obtendo Balanço Passivo {tipo} - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
+
+            bool shouldExtract = true;
+            // se não existir o arquivo ou
+            // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
+            var fileinfo = new FileInfo(company.GetFinDataFileName(link, FinInfoCategoria.Passivo, tipo));
+            log.Info($"Verificando se é necessário extrair Balanço Passivo {tipo}");
+            if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
+            {
+                shouldExtract = false;
+            }
+
+            if (!shouldExtract)
+            {
+                Console.WriteLine($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Balanço Passivo {tipo}");
+                log.Info($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Balanço Passivo {tipo}");
+                return;
+            }
 
             // deve primeiro acessar a url para obter os cookies
             var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=01 - Ativo";
-            var content = GetStringWithCookiesAsync(cookies, url);
+            var url = "";
+            if (tipo == FinInfoTipo.Individual)
+            {
+                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=02 - Passivo";
+            }
+            else
+            {
+                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=02%20-%20Passivo";
+            }
+            var content = await GetStringWithCookiesAsync(cookies, url);
 
-            ParseBalancoAtivo(content);
-
-            //TODO: save file
-        }
-
-        private void ParseBalancoAtivo(Task<string> content)
-        {
-            // TODO: implement
-            throw new NotImplementedException();
-        }
-
-        public async Task ScrapBalancoConsolidadoPassivo(DocLinkInfo link)
-        {
-            log.Info($"Obtendo Balanço consolidado (passivo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
-
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=02%20-%20Passivo";
-            var content = GetStringWithCookiesAsync(cookies, url);
-
-            ParseBalancoPassivo(content);
-
-            //TODO: save file
-        }
-
-        public async Task ScrapBalancoIndividualPassivo(DocLinkInfo link)
-        {
-            log.Info($"Obtendo Balanço individual (passivo) - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
-
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=02 - Passivo";
-            var content = GetStringWithCookiesAsync(cookies, url);
-
-            ParseBalancoPassivo(content);
-
-            //TODO: save file
-        }
-
-        private void ParseBalancoPassivo(Task<string> content)
-        {
-            // TODO: Implement
-            throw new NotImplementedException();
+            var passivo = ParseFinInfo(content, FinInfoCategoria.Passivo, tipo);
+            passivo.Save(fileinfo.FullName);
         }
 
         public async Task ScrapComposicaoCapital(DocLinkInfo link)
@@ -114,7 +120,6 @@ namespace bvmfscrapper.scrappers.findata
                 log.Info($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Capital Consolidado");
                 return;
             }
-            
 
             // deve primeiro acessar a url para obter os cookies
             var cookies = await GetCookiesForBovespaAsync(link);
@@ -125,42 +130,95 @@ namespace bvmfscrapper.scrappers.findata
             capital.Save(fileinfo.FullName);
         }
 
-
-
-        public async Task ScrapDREConsolidado(DocLinkInfo link)
+        public async Task ScrapDRE(DocLinkInfo link, FinInfoTipo tipo)
         {
-            log.Info($"Obtendo DRE Consolidado - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
+            log.Info($"Obtendo DRE {tipo} - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
+
+            bool shouldExtract = true;
+            // se não existir o arquivo ou
+            // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
+            var fileinfo = new FileInfo(company.GetFinDataFileName(link, FinInfoCategoria.DRE, tipo));
+            log.Info($"Verificando se é necessário extrair DRE {tipo}");
+            if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
+            {
+                shouldExtract = false;
+            }
+
+            if (!shouldExtract)
+            {
+                Console.WriteLine($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - DRE {tipo}");
+                log.Info($"Empresa {company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - DRE {tipo}");
+                return;
+            }
 
             // deve primeiro acessar a url para obter os cookies
             var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=T";
-            var content = GetStringWithCookiesAsync(cookies, url);
+            var url = "";
+            if (tipo == FinInfoTipo.Individual)
+            {
+                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=C";
+            }
+            else
+            {
+                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=T";
+            }
+            var content = await GetStringWithCookiesAsync(cookies, url);
 
-            ParseDRE(content);
-
-            //TODO: save file
+            var dre = ParseFinInfo(content, FinInfoCategoria.DRE, tipo);
+            dre.Save(fileinfo.FullName);
         }
 
-        public async Task ScrapDREIndividual(DocLinkInfo link)
+        private FinancialInfo ParseFinInfo(string content, FinInfoCategoria categoria, FinInfoTipo tipo)
         {
-            log.Info($"Obtendo DRE Individual - {company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
-            //TODO: check if it needs to be scrapped
+            var parser = new HtmlParser();
+            var doc = parser.Parse(content);
 
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=C";
-            var content = GetStringWithCookiesAsync(cookies, url);
+            FinancialInfo finInfo = new FinancialInfo();
+            finInfo.Categoria = categoria;
+            finInfo.Tipo = tipo;
 
-            ParseDRE(content);
+            var table = doc.QuerySelector("div.ScrollMaker").FirstElementChild as IHtmlTableElement;
+            //table anterior a table é a linha que contém o multiplicador
+            var multiplierText = table.PreviousElementSibling.TextContent;
+            if (multiplierText.Contains("Mil"))
+            {
+                finInfo.Multiplicador = 1000;
+            }
 
-            //TODO: save file
+            foreach (var row in table.Rows)
+            {
+                if (row.GetAttribute("valign") == "top") // linha de título
+                {
+                    // pega a data da terceira célula
+                    // Valor do Trimestre Atual 01/04/2009 a 30/06/2009
+                    var text = row.Cells[2].TextContent;
+                    var iUltimoNum = text.LastIndexOfNum();
+                    var start = iUltimoNum - 10;
+                    var datetext = text.Substring(start, 10);
+                    finInfo.Data = DateTime.ParseExact(datetext, "dd/MM/yyyy", new CultureInfo("pt-BR"));
+                }
+                else
+                {
+                    var codconta = row.Cells[0].TextContent;
+                    var nomeconta = row.Cells[1].TextContent;
+                    var valortext = row.Cells[2].TextContent;
+                    FinancialItem item = new FinancialItem();
+                    item.Conta = codconta.Trim();
+                    item.Nome = nomeconta.Trim();
+                    item.Valor = ParseValor(valortext.Trim());
+                    finInfo.Items.Add(item);
+                }
+            }
+
+            return finInfo;
         }
 
-        private void ParseDRE(Task<string> content)
+        private decimal ParseValor(string valortext)
         {
-            //TODO: implement
-            throw new NotImplementedException();
+            // ponto (.) separador de milhar
+            // parenteses em volta, é negativo
+            return decimal.Parse(valortext, NumberStyles.Currency | 
+                NumberStyles.AllowThousands, new CultureInfo("pt-BR"));
         }
 
         private async Task<IEnumerable<Cookie>> GetCookiesForBovespaAsync(DocLinkInfo info)
@@ -220,7 +278,7 @@ namespace bvmfscrapper.scrappers.findata
             {
                 capital.Multiplicador = 1000;
             }
-            if(td_multiplicador.TextContent.Contains("Milhão") || td_multiplicador.TextContent.Contains("Milhões"))
+            if (td_multiplicador.TextContent.Contains("Milhão") || td_multiplicador.TextContent.Contains("Milhões"))
             {
                 capital.Multiplicador = 1000 * 1000;
             }

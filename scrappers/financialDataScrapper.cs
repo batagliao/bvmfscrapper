@@ -33,18 +33,15 @@ namespace bvmfscrapper.scrappers
 
             foreach(var itr in itrs)
             {
-                //TODO: check before everything if it needs to be extracted
                 var itrScrapper = CreateItrScrapper(itr, company);
                 await itrScrapper.ScrapComposicaoCapital(itr);
-                await itrScrapper.ScrapBalancoIndividualAtivo(itr);
-                await itrScrapper.ScrapBalancoIndividualPassivo(itr);
-                await itrScrapper.ScrapDREIndividual(itr);
-                await itrScrapper.ScrapBalancoConsolidadoAtivo(itr);
-                await itrScrapper.ScrapBalancoConsolidadoPassivo(itr);
-                await itrScrapper.ScrapDREConsolidado(itr);
+                await itrScrapper.ScrapBalancoAtivo(itr, FinInfoTipo.Individual);
+                await itrScrapper.ScrapBalancoPassivo(itr, FinInfoTipo.Individual);
+                await itrScrapper.ScrapDRE(itr, FinInfoTipo.Individual);
+                await itrScrapper.ScrapBalancoAtivo(itr, FinInfoTipo.Consolidado);
+                await itrScrapper.ScrapBalancoPassivo(itr, FinInfoTipo.Consolidado);
+                await itrScrapper.ScrapDRE(itr, FinInfoTipo.Consolidado);
             }
-            
-
 
             // extract DFP
             Console.WriteLine($"Extraindo informações de DFP da empresa {company.RazaoSocial}");
@@ -53,15 +50,14 @@ namespace bvmfscrapper.scrappers
             dfps = RemoveDuplicates(dfps);
             foreach (var dfp in dfps)
             {
-                //TODO: check before everything if it needs to be extracted
                 var dfpScrapper = CreateDFPScrapper(dfp, company);
                 await dfpScrapper.ScrapComposicaoCapital(dfp);
-                await dfpScrapper.ScrapBalancoIndividualAtivo(dfp);
-                await dfpScrapper.ScrapBalancoIndividualPassivo(dfp);
-                await dfpScrapper.ScrapDREIndividual(dfp);
-                await dfpScrapper.ScrapBalancoConsolidadoAtivo(dfp);
-                await dfpScrapper.ScrapBalancoConsolidadoPassivo(dfp);
-                await dfpScrapper.ScrapDREConsolidado(dfp);
+                await dfpScrapper.ScrapBalancoAtivo(dfp, FinInfoTipo.Individual);
+                await dfpScrapper.ScrapBalancoPassivo(dfp, FinInfoTipo.Individual);
+                await dfpScrapper.ScrapDRE(dfp, FinInfoTipo.Individual);
+                await dfpScrapper.ScrapBalancoAtivo(dfp, FinInfoTipo.Consolidado);
+                await dfpScrapper.ScrapBalancoPassivo(dfp, FinInfoTipo.Individual);
+                await dfpScrapper.ScrapDRE(dfp, FinInfoTipo.Consolidado);
             }
         }
 

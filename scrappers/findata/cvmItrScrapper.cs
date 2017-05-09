@@ -13,22 +13,12 @@ namespace bvmfscrapper.scrappers.findata
             this.company = company;
         }
 
-        public Task ScrapBalancoConsolidadoAtivo(DocLinkInfo link)
+        public Task ScrapBalancoAtivo(DocLinkInfo link, FinInfoTipo tipo)
         {
             throw new NotImplementedException();
         }
-
-        public Task ScrapBalancoConsolidadoPassivo(DocLinkInfo link)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ScrapBalancoIndividualAtivo(DocLinkInfo link)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ScrapBalancoIndividualPassivo(DocLinkInfo link)
+        
+        public Task ScrapBalancoPassivo(DocLinkInfo link, FinInfoTipo tipo)
         {
             throw new NotImplementedException();
         }
@@ -38,12 +28,7 @@ namespace bvmfscrapper.scrappers.findata
             throw new NotImplementedException();
         }
 
-        public Task ScrapDREConsolidado(DocLinkInfo link)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ScrapDREIndividual(DocLinkInfo link)
+        public Task ScrapDRE(DocLinkInfo link, FinInfoTipo tipo)
         {
             throw new NotImplementedException();
         }
