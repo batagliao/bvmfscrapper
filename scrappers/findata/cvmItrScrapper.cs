@@ -4,33 +4,13 @@ using bvmfscrapper.models;
 
 namespace bvmfscrapper.scrappers.findata
 {
-    public class CvmItrScrapper : IItrScrapper
+    public class CvmItrScrapper : CvmScrapperBase, IItrScrapper
     {
-        private ScrappedCompany company;
-
         public CvmItrScrapper(ScrappedCompany company)
         {
-            this.company = company;
-        }
-
-        public Task ScrapBalancoAtivo(DocLinkInfo link, FinInfoTipo tipo)
-        {
-            throw new NotImplementedException();
+            this.Company = company;
         }
         
-        public Task ScrapBalancoPassivo(DocLinkInfo link, FinInfoTipo tipo)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ScrapComposicaoCapital(DocLinkInfo link)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task ScrapDRE(DocLinkInfo link, FinInfoTipo tipo)
-        {
-            throw new NotImplementedException();
-        }
+        public override short CodTipoDocumento => 3;
     }
 }
