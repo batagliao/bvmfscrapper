@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,14 +10,17 @@ using System.Net.Http;
 using AngleSharp.Parser.Html;
 using AngleSharp.Dom.Html;
 using System.Globalization;
+using System.Linq;
 
 namespace bvmfscrapper.scrappers.findata
 {
-    public abstract class BovespaScrapperBase : IFinDataScrapper
+    public abstract class CvmScrapperBase : IFinDataScrapper
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(BovespaScrapperBase));
+        private static readonly ILog log = LogManager.GetLogger(typeof(CvmScrapperBase));
 
         public virtual ScrappedCompany Company { get; set; }
+
+        public abstract short CodTipoDocumento { get; }
 
         public async Task ScrapBalancoAtivo(DocLinkInfo link, FinInfoTipo tipo)
         {
@@ -40,18 +43,18 @@ namespace bvmfscrapper.scrappers.findata
                 return;
             }
 
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
             var url = "";
             if (tipo == FinInfoTipo.Individual)
             {
-                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=01 - Ativo";
+                url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=2&Periodo=0&Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
             }
             else
             {
-                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=01%20-%20Ativo";
+                url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=2&Periodo=0&Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
             }
-            var content = await GetStringWithCookiesAsync(cookies, url);
+
+            var client = new HttpClient();
+            var content = await client.GetStringWithRetryAsync(url);
 
             var ativo = ParseFinInfo(content, FinInfoCategoria.Ativo, tipo);
             ativo.Save(fileinfo.FullName);
@@ -77,19 +80,19 @@ namespace bvmfscrapper.scrappers.findata
                 log.Info($"Empresa {Company.RazaoSocial} não necessita extrair ITR {link.Data.ToString("dd/MM/yyyy")} - Balanço Passivo {tipo}");
                 return;
             }
-
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
+                        
             var url = "";
             if (tipo == FinInfoTipo.Individual)
             {
-                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=C&Tipo=02 - Passivo";
+                url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=3&Periodo=0&Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
             }
             else
             {
-                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWBalanco.asp?TipoInfo=T&Tipo=02%20-%20Passivo";
+                url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=3&Periodo=0&Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
             }
-            var content = await GetStringWithCookiesAsync(cookies, url);
+
+            var client = new HttpClient();
+            var content = await client.GetStringWithRetryAsync(url);
 
             var passivo = ParseFinInfo(content, FinInfoCategoria.Passivo, tipo);
             passivo.Save(fileinfo.FullName);
@@ -116,18 +119,19 @@ namespace bvmfscrapper.scrappers.findata
                 return;
             }
 
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
+                        
             var url = "";
             if (tipo == FinInfoTipo.Individual)
             {
-                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=C";
+                url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=1&Demonstracao=4&Periodo=0&Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
             }
             else
             {
-                url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWDRE.asp?TipoInfo=T";
+                url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDemonstracaoFinanceiraITR.aspx?Informacao=2&Demonstracao=4&Periodo=0&Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
             }
-            var content = await GetStringWithCookiesAsync(cookies, url);
+
+            var client = new HttpClient();
+            var content = await client.GetStringWithRetryAsync(url);
 
             var dre = ParseFinInfo(content, FinInfoCategoria.DRE, tipo);
             dre.Save(fileinfo.FullName);
@@ -142,17 +146,17 @@ namespace bvmfscrapper.scrappers.findata
             finInfo.Categoria = categoria;
             finInfo.Tipo = tipo;
 
-            var table = doc.QuerySelector("div.ScrollMaker").FirstElementChild as IHtmlTableElement;
-            //table anterior a table é a linha que contém o multiplicador
-            var multiplierText = table.PreviousElementSibling.TextContent;
-            if (multiplierText.Contains("Mil"))
+            var title = doc.QuerySelector("#TituloTabelaSemBorda");
+            if (title.TextContent.Contains("Reais Mil"))
             {
                 finInfo.Multiplicador = 1000;
             }
 
+            var table = title.NextElementSibling as IHtmlTableElement;            
+
             foreach (var row in table.Rows)
             {
-                if (row.GetAttribute("valign") == "top") // linha de título
+                if (row.Cells[0].TextContent.Trim() == "Conta") // linha de título
                 {
                     // pega a data da terceira célula
                     // Valor do Trimestre Atual 01/04/2009 a 30/06/2009
@@ -178,10 +182,13 @@ namespace bvmfscrapper.scrappers.findata
             return finInfo;
         }
 
-        private decimal ParseValor(string valortext)
+        private decimal? ParseValor(string valortext)
         {
             // ponto (.) separador de milhar
             // parenteses em volta, é negativo
+            if(string.IsNullOrWhiteSpace(valortext))
+                return null;
+
             return decimal.Parse(valortext, NumberStyles.Currency |
                 NumberStyles.AllowThousands, new CultureInfo("pt-BR"));
         }
@@ -207,10 +214,10 @@ namespace bvmfscrapper.scrappers.findata
                 return;
             }
 
-            // deve primeiro acessar a url para obter os cookies
-            var cookies = await GetCookiesForBovespaAsync(link);
-            var url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWG1CompCapital.asp";
-            var content = await GetStringWithCookiesAsync(cookies, url);
+            //TODO: DFP deve mudar CodDocumento para 4
+            var url = $"https://www.rad.cvm.gov.br/ENETCONSULTA/frmDadosComposicaoCapitalITR.aspx?Grupo=&Quadro=&NomeTipoDocumento=&Titulo=&Empresa=&DataReferencia=&Versao=&CodTipoDocumento={CodTipoDocumento}&NumeroSequencialDocumento={link.NumeroSequencialDocumento}&NumeroSequencialRegistroCvm={Company.CodigoCVM}&CodigoTipoInstituicao=2";
+            var client = new HttpClient();
+            var content = await client.GetStringWithRetryAsync(url);
 
             var capital = ParseComposicaoCapital(content);
             capital.Save(fileinfo.FullName);
@@ -222,87 +229,57 @@ namespace bvmfscrapper.scrappers.findata
             var doc = parser.Parse(content);
 
             ComposicaoCapital capital = new ComposicaoCapital();
-            var tds_titles = doc.QuerySelectorAll("td.label");
+            var div = doc.QuerySelector("#UltimaTabela");
+            var table = div.Children.Where(e => e.LocalName == "table").First() as IHtmlTableElement;
 
-            var td_multiplicador = tds_titles[0];
-            var td_date = tds_titles[2];
-
-            if (td_multiplicador.TextContent.Contains("Mil") || td_multiplicador.TextContent.Contains("Milhares"))
+            bool tesouraria = false;
+            foreach (var row in table.Rows)
             {
-                capital.Multiplicador = 1000;
-            }
-            if (td_multiplicador.TextContent.Contains("Milhão") || td_multiplicador.TextContent.Contains("Milhões"))
-            {
-                capital.Multiplicador = 1000 * 1000;
-            }
-
-            var tr_title = td_multiplicador.ParentElement;
-            // walk the rows
-
-            var tr = tr_title.NextElementSibling as IHtmlTableRowElement;
-            if (tr.Cells[0].TextContent.Contains("Integralizado"))
-            {
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
-
-            // Ordinárias mercado
-            if (tr.Cells[0].TextContent.Contains("Ordinárias"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.OrdinariasCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
-
-            // Preferenciais mercado
-            if (tr.Cells[0].TextContent.Contains("Preferenciais"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.PrefernciaisCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
-
-            if (tr.Cells[0].TextContent.Contains("Tesouraria"))
-            {
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
-
-            // Ordinárias tesouraria
-            if (tr.Cells[0].TextContent.Contains("Ordinárias"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.OrdinariasTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
-
-            // Preferenciais tesouraria
-            if (tr.Cells[0].TextContent.Contains("Preferenciais"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.PreferenciaisTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                //tr = tr.NextElementSibling as IHtmlTableRowElement;
+                if (row.Cells[0].TextContent.Contains("Ações")) //primeira linha
+                {
+                    //obtem a data da segunda célula
+                    capital.Date = DateTime.ParseExact(row.Cells[1].TextContent.Trim(), "dd/MM/yyyy", new CultureInfo("pt-BR"));
+                }
+                if (row.Cells[0].TextContent.Contains("Capital")) //segunda linha
+                {
+                    // acoes no mercado
+                    tesouraria = false;
+                    continue;
+                }
+                if (row.Cells[0].TextContent.Contains("Tesouraria"))
+                {
+                    // acoes em tesouraria
+                    tesouraria = true;
+                    continue;
+                }
+                if (row.Cells[0].TextContent.Contains("Ordinárias"))
+                {
+                    var value = Convert.ToDecimal(row.Cells[1].TextContent.Trim());
+                    if (tesouraria)
+                    {
+                        capital.OrdinariasTesouraria = value;
+                    }
+                    else
+                    {
+                        capital.OrdinariasCirculantes = value;
+                    }
+                }
+                if (row.Cells[0].TextContent.Contains("Preferenciais"))
+                {
+                    var value = Convert.ToDecimal(row.Cells[1].TextContent.Trim());
+                    if (tesouraria)
+                    {
+                        capital.PreferenciaisTesouraria = value;
+                    }
+                    else
+                    {
+                        capital.PrefernciaisCirculantes = value;
+                    }
+                }
             }
 
             return capital;
         }
-        protected abstract Task<IEnumerable<Cookie>> GetCookiesForBovespaAsync(DocLinkInfo info);
 
-        private async Task<string> GetStringWithCookiesAsync(IEnumerable<Cookie> cookies, string url)
-        {
-            // Obtém o conteúdo da URL passando os cookies
-            log.Info($"Chamando a url {url} passando cookies");
-            var container = new CookieContainer();
-            var handler = new HttpClientHandler();
-            handler.CookieContainer = container;
-            var client = new HttpClient(handler);
-
-            foreach (var cookie in cookies)
-            {
-                log.Info($"Cookie name: {cookie.Name}; value: {cookie.Value}");
-                handler.CookieContainer.Add(new Uri(url), cookie);
-            }
-
-            return await client.GetStringAsync(url);
-
-        }
     }
 }

@@ -47,6 +47,6 @@ namespace bvmfscrapper.models
     {
         public string Conta { get; set; }
         public string Nome { get; set; }
-        public decimal Valor { get; set; }
+        public decimal? Valor { get; set; }
     }
 }
