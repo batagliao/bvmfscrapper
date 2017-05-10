@@ -14,7 +14,7 @@ namespace bvmfscrapper.scrappers
 {
     public static class FinancialDataScrapper
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(CompanyExtensions));
+        private static readonly ILog log = LogManager.GetLogger(typeof(FinancialDataScrapper));
 
         public static async Task ExtractFinancialInfo(ScrappedCompany company)
         {
@@ -33,14 +33,14 @@ namespace bvmfscrapper.scrappers
 
             foreach(var itr in itrs)
             {
-                var itrScrapper = CreateItrScrapper(itr, company);
-                await itrScrapper.ScrapComposicaoCapital(itr);
-                await itrScrapper.ScrapBalancoAtivo(itr, FinInfoTipo.Individual);
-                await itrScrapper.ScrapBalancoPassivo(itr, FinInfoTipo.Individual);
-                await itrScrapper.ScrapDRE(itr, FinInfoTipo.Individual);
-                await itrScrapper.ScrapBalancoAtivo(itr, FinInfoTipo.Consolidado);
-                await itrScrapper.ScrapBalancoPassivo(itr, FinInfoTipo.Consolidado);
-                await itrScrapper.ScrapDRE(itr, FinInfoTipo.Consolidado);
+                var scrapper = new ItrDfpDataScrapper(company);
+                await scrapper.ScrapComposicaoCapital(itr);
+                await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.Ativo);
+                await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.Passivo);
+                await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.DRE);
+                await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.Ativo);
+                await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.Passivo);
+                await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.DRE);
             }
 
             // extract DFP
@@ -50,14 +50,14 @@ namespace bvmfscrapper.scrappers
             dfps = RemoveDuplicates(dfps);
             foreach (var dfp in dfps)
             {
-                var dfpScrapper = CreateDFPScrapper(dfp, company);
-                await dfpScrapper.ScrapComposicaoCapital(dfp);
-                await dfpScrapper.ScrapBalancoAtivo(dfp, FinInfoTipo.Individual);
-                await dfpScrapper.ScrapBalancoPassivo(dfp, FinInfoTipo.Individual);
-                await dfpScrapper.ScrapDRE(dfp, FinInfoTipo.Individual);
-                await dfpScrapper.ScrapBalancoAtivo(dfp, FinInfoTipo.Consolidado);
-                await dfpScrapper.ScrapBalancoPassivo(dfp, FinInfoTipo.Individual);
-                await dfpScrapper.ScrapDRE(dfp, FinInfoTipo.Consolidado);
+                var scrapper = new ItrDfpDataScrapper(company);
+                await scrapper.ScrapComposicaoCapital(dfp);
+                await scrapper.ScrapDoc(dfp, FinInfoTipo.Individual, FinInfoCategoria.Ativo);
+                await scrapper.ScrapDoc(dfp, FinInfoTipo.Individual, FinInfoCategoria.Passivo);
+                await scrapper.ScrapDoc(dfp, FinInfoTipo.Individual, FinInfoCategoria.DRE);
+                await scrapper.ScrapDoc(dfp, FinInfoTipo.Consolidado, FinInfoCategoria.Ativo);
+                await scrapper.ScrapDoc(dfp, FinInfoTipo.Consolidado, FinInfoCategoria.Passivo);
+                await scrapper.ScrapDoc(dfp, FinInfoTipo.Consolidado, FinInfoCategoria.DRE);
             }
         }
 
@@ -81,22 +81,6 @@ namespace bvmfscrapper.scrappers
                 }
             }
             return filteredLinks;
-        }
-
-        private static IDfpScrapper CreateDFPScrapper(DocLinkInfo dfp, ScrappedCompany company)
-        {
-            if (dfp.LinkType == LinkTypeEnum.Bovespa)
-                return new BovespaDfpScrapper(company);
-
-            return new CvmDfpScrapper(company);
-        }
-
-        private static IItrScrapper CreateItrScrapper(DocLinkInfo itr, ScrappedCompany company)
-        {
-            if(itr.LinkType == LinkTypeEnum.Bovespa)
-                return new BovespaItrScrapper(company);
-
-            return new CvmItrScrapper(company);
         }
 
         private static Dictionary<DocInfoType, List<DocLinkInfo>> LoadLinks(ScrappedCompany company)
