@@ -55,11 +55,11 @@ namespace bvmfscrapper
 
             log.Info("Aplicação iniciada. Log configurado");
 
-            //try
-            //{
+            try
+            {
 
 
-            Task.Run(async () =>
+                Task.Run(async () =>
             {
                 List<ScrappedCompany> companies = null;
                 if (Options.Instance.LoadCompanyList)
@@ -122,12 +122,12 @@ namespace bvmfscrapper
 
             }).GetAwaiter().GetResult();
 
-            //}
-            //catch (Exception ex)
-            //{
-            //    Console.WriteLine(ex.ToString());
-            //    log.Fatal(ex.ToString());
-            //}
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                log.Fatal(ex.ToString());
+            }
         }
 
         static void UpdateCompaniesInDatabase(List<ScrappedCompany> companies)
@@ -184,11 +184,11 @@ namespace bvmfscrapper
                 companies = ScrappedCompany.LoadCompaniesFromFiles(BASICDATA_DIR);
             }
 
-            foreach(var company in companies)
+            foreach (var company in companies)
             {
                 await FinancialDataScrapper.ExtractFinancialInfo(company);
             }
-                        
+
         }
     }
 }

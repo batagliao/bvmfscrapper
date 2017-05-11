@@ -22,6 +22,12 @@ namespace bvmfscrapper.models
 
         public void Save(string filename)
         {
+            var dir = Path.GetDirectoryName(filename);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
             log.Info($"Salvando arquivo de Composição de Capital - {filename}");
             var json = JsonConvert.SerializeObject(this, Formatting.Indented);
             File.WriteAllText(filename, json);

@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using AngleSharp.Dom;
 using AngleSharp.Dom.Html;
+using Newtonsoft.Json;
 
 namespace bvmfscrapper.models
 {
@@ -12,13 +13,19 @@ namespace bvmfscrapper.models
             Bovespa,
             CVM
         }
-        public DateTime Data { get; protected set; }
-        public DateTime DataApresentacao { get; protected set; }
-        public string Link { get; protected set; }
-        public string Title { get; protected set; }
-        public DocInfoType DocType { get; protected set; }
-        public LinkTypeEnum LinkType { get; protected set; }
-        public int NumeroSequencialDocumento { get; protected set; }
+        public DateTime Data { get; set; }
+        public DateTime DataApresentacao { get; set; }
+        public string Link { get; set; }
+        public string Title { get; set; }
+        public DocInfoType DocType { get; set; }
+        public LinkTypeEnum LinkType { get; set; }
+        public int NumeroSequencialDocumento { get; set; }
+
+        [JsonConstructor]
+        protected DocLinkInfo()
+        {
+
+        }
 
         public DocLinkInfo(DocInfoType doctype, IHtmlAnchorElement a)
         {
@@ -38,8 +45,9 @@ namespace bvmfscrapper.models
         {
             // writetxt(MontaHint('30/09/2003','Legislação Societária','Apresentação  ','29/10/2003 13:07','P'));
             var javascript = a.GetAttribute("onmouseover");
-            var items = javascript.Split(',');                    
-            var data = DateTime.ParseExact(items[3], "dd/MM/yyyy HH:mm", new CultureInfo("pt-BR"));
+            var items = javascript.Split(',');
+            var date = items[3].Replace("\"","").Replace("\'", "");
+            var data = DateTime.ParseExact(date, "dd/MM/yyyy H:mm", new CultureInfo("pt-BR"));
             return data;
         }
 

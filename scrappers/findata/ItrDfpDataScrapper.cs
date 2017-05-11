@@ -18,7 +18,8 @@ namespace bvmfscrapper.scrappers.findata
         private static readonly ILog log = LogManager.GetLogger(typeof(ItrDfpDataScrapper));
 
         public ScrappedCompany Company { get; private set; }
-        public IEnumerable<Cookie> Cookies { get; private set; }
+        public IEnumerable<Cookie> CookiesBovespa { get; private set; }
+        public IEnumerable<Cookie> CookiesCvm { get; private set; }
 
         public ItrDfpDataScrapper(ScrappedCompany company)
         {
@@ -29,12 +30,14 @@ namespace bvmfscrapper.scrappers.findata
         public async Task ScrapDoc(DocLinkInfo link, FinInfoTipo tipo, FinInfoCategoria categoria)
         {
             log.Info($"Obtendo {categoria} {tipo} - {Company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
+            Console.WriteLine($"Obtendo {categoria} {tipo} - {Company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
 
             bool shouldExtract = true;
             // se não existir o arquivo ou
             // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
             var fileinfo = new FileInfo(Company.GetFinDataFileName(link, FinInfoCategoria.Passivo, tipo));
             log.Info($"Verificando se é necessário extrair {categoria} {tipo}");
+            Console.WriteLine($"Verificando se é necessário extrair {categoria} {tipo}");
             if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
             {
                 shouldExtract = false;
@@ -45,6 +48,7 @@ namespace bvmfscrapper.scrappers.findata
                 Console.WriteLine($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
                 log.Info($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} - {categoria}{tipo}");
                 return;
+                await Task.CompletedTask;
             }
 
             var url = "";
@@ -65,7 +69,6 @@ namespace bvmfscrapper.scrappers.findata
 
             var fininfo = ParseFinInfo(content, link.LinkType, categoria, tipo);
             fininfo.Save(fileinfo.FullName);
-
         }
 
         private string GetBalancoAtivoUrl(DocLinkInfo link, FinInfoTipo tipo)
@@ -239,6 +242,8 @@ namespace bvmfscrapper.scrappers.findata
             {
                 capital = ParseComposicaoCapitalCvm(content);
             }
+
+            capital.Save(fileinfo.FullName);
         }
 
         private ComposicaoCapital ParseComposicaoCapitalBovespa(string content)
@@ -370,29 +375,34 @@ namespace bvmfscrapper.scrappers.findata
 
         private async Task<string> GetAsync(DocLinkInfo link, string url)
         {
-            HttpClient client = null;
-            // no caso de bovespa é necessário obter os cookies antes da chamada
+            IEnumerable<Cookie> cookies = null;
+            // é necessário obter os cookies antes da chamada
             if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
-
-                if (Cookies == null)
+                if (CookiesBovespa == null)
                 {
-                    Cookies = await GetCookiesForBovespaAsync(link);
+                    CookiesBovespa = await GetCookiesForBovespaAsync(link);
                 }
-                var container = new CookieContainer();
-                var handler = new HttpClientHandler();
-                handler.CookieContainer = container;
-                client = new HttpClient(handler);
-
-                foreach (var cookie in Cookies)
-                {
-                    log.Info($"Cookie name: {cookie.Name}; value: {cookie.Value}");
-                    handler.CookieContainer.Add(new Uri(url), cookie);
-                }
+                cookies = CookiesBovespa;
             }
-            else
+            else //cvm
             {
-                client = new HttpClient();
+                if(CookiesCvm == null)
+                {
+                    CookiesCvm = await GetCookiesForCvmAsync(link);
+                }
+                cookies = CookiesCvm;
+            }
+
+            var container = new CookieContainer();
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = container;
+            var client = new HttpClient(handler);
+
+            foreach (var cookie in cookies)
+            {
+                log.Info($"Cookie name: {cookie.Name}; value: {cookie.Value}");
+                handler.CookieContainer.Add(new Uri(url), cookie);
             }
 
             return await client.GetStringWithRetryAsync(url);
@@ -431,6 +441,23 @@ namespace bvmfscrapper.scrappers.findata
             return await Task.FromResult(cookies);
         }
 
+        private async Task<IEnumerable<Cookie>> GetCookiesForCvmAsync(DocLinkInfo info)
+        {
+            var url = "http://www.rad.cvm.gov.br/ENETCONSULTA/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=65179&CodigoTipoInstituicao=2";
+            log.Info($"Acessando url para obtenção dos cookies");
+            log.Info($"url = {url}");
+
+            var container = new CookieContainer();
+            var handler = new HttpClientHandler();
+            handler.CookieContainer = container;
+
+            var client = new HttpClient(handler);
+            var response = await client.GetAsync(url);
+            var cookies = container.GetCookies(new Uri(url)).Cast<Cookie>().ToList();
+
+            return await Task.FromResult(cookies);
+        }
+
         private FinancialInfo ParseFinInfo(string content, DocLinkInfo.LinkTypeEnum linktype, FinInfoCategoria categoria, FinInfoTipo tipo)
         {
             var parser = new HtmlParser();
@@ -444,9 +471,10 @@ namespace bvmfscrapper.scrappers.findata
             IHtmlTableElement table = null;
             if (linktype == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
-                table = doc.QuerySelector("div.ScrollMaker").FirstElementChild as IHtmlTableElement;
+                var div = doc.QuerySelector("div.ScrollMaker");
+                table = div.FirstElementChild as IHtmlTableElement;
                 //table anterior a table é a linha que contém o multiplicador
-                var multiplierText = table.PreviousElementSibling.TextContent;
+                var multiplierText = div.PreviousElementSibling.TextContent;
                 if (multiplierText.Contains("Mil"))
                 {
                     finInfo.Multiplicador = 1000;
@@ -481,8 +509,8 @@ namespace bvmfscrapper.scrappers.findata
                     // Valor do Trimestre Atual 01/04/2009 a 30/06/2009
                     var text = row.Cells[2].TextContent;
                     var iUltimoNum = text.LastIndexOfNum();
-                    var start = iUltimoNum - 10;
-                    var datetext = text.Substring(start, 10);
+                    var start = iUltimoNum - 9;
+                    var datetext = text.Substring(start, 10).Trim();
                     finInfo.Data = DateTime.ParseExact(datetext, "dd/MM/yyyy", new CultureInfo("pt-BR"));
                 }
                 else

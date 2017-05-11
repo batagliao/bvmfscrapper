@@ -27,7 +27,7 @@ namespace bvmfscrapper
 
         public static string GetFinDataFileName(this ScrappedCompany c, DocLinkInfo link, FinInfoCategoria categoria, FinInfoTipo tipo)
         {
-            string date = link.Data.ToString("ddMMyyyy");
+            string date = link.Data.ToString("yyyyMMdd");
             string file = $"{c.CodigoCVM}.{link.DocType}.{date}.{categoria}.{tipo}.json";
             string path = $"{Program.FINDATA_DIR}";
             return Path.Combine(path, file);
@@ -35,7 +35,7 @@ namespace bvmfscrapper
 
         public static string GetFinDataCapitalFileName(this ScrappedCompany c, DocLinkInfo link)
         {
-            string date = link.Data.ToString("ddMMyyyy");
+            string date = link.Data.ToString("yyyyMMdd");
             string file = $"{c.CodigoCVM}.{link.DocType}.{date}.CapitalConsolidado.json";
             string path = $"{Program.FINDATA_DIR}";
             return Path.Combine(path, file);

@@ -70,7 +70,7 @@ namespace bvmfscrapper.scrappers
             // verifica os grupos para encontrar os duplicados e remove o mais antigo da lista principal
             foreach (var group in groups)
             {
-                if(group.Count() > 0)
+                if(group.Count() > 1)
                 {
                     var itemPermanece = group.MaxBy(g => g.DataApresentacao);
                     filteredLinks.Add(itemPermanece);
