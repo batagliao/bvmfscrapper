@@ -70,7 +70,8 @@ namespace bvmfscrapper.scrappers
 
                     log.Info($"Carregando empresa do arquivo {file}");
                     var deserialized = ScrappedCompany.Load(file);
-                    if (c.UltimaAtualizacao <= deserialized.UltimaAtualizacao)
+                    // deserializer é null quando o arquivo está vazio por algum erro em execuções ateriores
+                    if (deserialized != null && c.UltimaAtualizacao <= deserialized.UltimaAtualizacao)
                     {
                         log.Info($"Empresa já está atualizada. Data última atualização: {c.UltimaAtualizacao}");
                         Console.WriteLine("Empresa está atualizada. Pulando");

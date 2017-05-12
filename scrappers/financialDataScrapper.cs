@@ -34,13 +34,35 @@ namespace bvmfscrapper.scrappers
             foreach(var itr in itrs)
             {
                 var scrapper = new ItrDfpDataScrapper(company);
-                await scrapper.ScrapComposicaoCapital(itr);
-                await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.Ativo);
-                await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.Passivo);
-                await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.DRE);
-                await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.Ativo);
-                await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.Passivo);
-                await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.DRE);
+                var docs = await scrapper.GetAvailableDocs(itr);
+                if (docs.ComposicaoCapital)
+                {
+                    await scrapper.ScrapComposicaoCapital(itr);
+                }
+                if (docs.AtivoIndividual)
+                {
+                    await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.Ativo);
+                }
+                if (docs.PassivoIndividual)
+                {
+                    await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.Passivo);
+                }
+                if (docs.DREIndividual)
+                {
+                    await scrapper.ScrapDoc(itr, FinInfoTipo.Individual, FinInfoCategoria.DRE);
+                }
+                if (docs.AtivoConsolidado)
+                {
+                    await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.Ativo);
+                }
+                if (docs.PassivoConsolidado)
+                {
+                    await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.Passivo);
+                }
+                if (docs.DREConsolidado)
+                {
+                    await scrapper.ScrapDoc(itr, FinInfoTipo.Consolidado, FinInfoCategoria.DRE);
+                }
             }
 
             // extract DFP

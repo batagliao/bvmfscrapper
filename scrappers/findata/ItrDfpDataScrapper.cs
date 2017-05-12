@@ -26,6 +26,62 @@ namespace bvmfscrapper.scrappers.findata
             this.Company = company;
         }
 
+        public async Task<AvailableDocs> GetAvailableDocs(DocLinkInfo link)
+        {
+            // esse método obtem os documentos disponíveis
+            // isso é para saber se existem as DFs Consolidadas ou somente as individuais
+
+            // Esse método aproveita a chamada e armazena os cookies
+
+            var availableDocs = new AvailableDocs();
+
+            string contentstring = "";
+            if(link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
+            {
+                var tuple = await GetCookiesForBovespaAsync(link);
+                CookiesBovespa = tuple.Item1;
+                // docs disponiveis
+                var url = "http://www2.bmfbovespa.com.br/dxw/DXWMenuBotoes.asp";
+                contentstring = await GetAsync(link, url);
+            }
+            else //cvm
+            {
+                var tuple = await GetCookiesForCvmAsync(link);
+                CookiesCvm = tuple.Item1;
+
+                // docs disponiveis
+                contentstring = await tuple.Item2.ReadAsStringAsync();
+            }
+
+            HtmlParser parser = new HtmlParser();
+            var doc = parser.Parse(contentstring);
+
+            if(link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
+            {
+                var map = doc.QuerySelector("map");
+                if(!map.Children.Any(c => c.TextContent.Contains("Consolidad")))
+                {
+                    availableDocs.AtivoConsolidado = false;
+                    availableDocs.PassivoConsolidado = false;
+                    availableDocs.DREConsolidado = false;
+                    Console.WriteLine($"Empresa não possui consolidados de {link.Data.ToString("dd/MM/yyyy")}");
+                }
+            }
+            else
+            {
+                var divs = doc.QuerySelectorAll("div.ComboBoxItem_CVM");
+                // se não tem nenhum div com o texto Consolidado/a
+                if(!divs.Any(d => d.TextContent.Contains("Consolidad")))
+                {
+                    availableDocs.AtivoConsolidado = false;
+                    availableDocs.PassivoConsolidado = false;
+                    availableDocs.DREConsolidado = false;
+                    Console.WriteLine($"Empresa não possui consolidados de {link.Data.ToString("dd/MM/yyyy")}");
+                }
+            }
+
+            return availableDocs;
+        }
 
         public async Task ScrapDoc(DocLinkInfo link, FinInfoTipo tipo, FinInfoCategoria categoria)
         {
@@ -48,7 +104,6 @@ namespace bvmfscrapper.scrappers.findata
                 Console.WriteLine($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
                 log.Info($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} - {categoria}{tipo}");
                 return;
-                await Task.CompletedTask;
             }
 
             var url = "";
@@ -381,7 +436,8 @@ namespace bvmfscrapper.scrappers.findata
             {
                 if (CookiesBovespa == null)
                 {
-                    CookiesBovespa = await GetCookiesForBovespaAsync(link);
+                    var tuple = await GetCookiesForBovespaAsync(link);
+                    CookiesBovespa = tuple.Item1;
                 }
                 cookies = CookiesBovespa;
             }
@@ -389,7 +445,8 @@ namespace bvmfscrapper.scrappers.findata
             {
                 if(CookiesCvm == null)
                 {
-                    CookiesCvm = await GetCookiesForCvmAsync(link);
+                    var tuple = await GetCookiesForCvmAsync(link);
+                    CookiesCvm = tuple.Item1;
                 }
                 cookies = CookiesCvm;
             }
@@ -408,7 +465,7 @@ namespace bvmfscrapper.scrappers.findata
             return await client.GetStringWithRetryAsync(url);
         }
 
-        private async Task<IEnumerable<Cookie>> GetCookiesForBovespaAsync(DocLinkInfo info)
+        private async Task<Tuple<IEnumerable<Cookie>, HttpContent>> GetCookiesForBovespaAsync(DocLinkInfo info)
         {
             // codificar para url
             var razao = WebUtility.UrlEncode(Company.RazaoSocial);
@@ -438,10 +495,12 @@ namespace bvmfscrapper.scrappers.findata
             var response = await client.GetAsync(url);
             var cookies = container.GetCookies(new Uri(url)).Cast<Cookie>().ToList();
 
-            return await Task.FromResult(cookies);
+            var result = Tuple.Create<IEnumerable<Cookie>, HttpContent>(cookies, response.Content);
+
+            return await Task.FromResult(result);
         }
 
-        private async Task<IEnumerable<Cookie>> GetCookiesForCvmAsync(DocLinkInfo info)
+        private async Task<Tuple<IEnumerable<Cookie>, HttpContent>> GetCookiesForCvmAsync(DocLinkInfo info)
         {
             var url = "http://www.rad.cvm.gov.br/ENETCONSULTA/frmGerenciaPaginaFRE.aspx?NumeroSequencialDocumento=65179&CodigoTipoInstituicao=2";
             log.Info($"Acessando url para obtenção dos cookies");
@@ -455,7 +514,8 @@ namespace bvmfscrapper.scrappers.findata
             var response = await client.GetAsync(url);
             var cookies = container.GetCookies(new Uri(url)).Cast<Cookie>().ToList();
 
-            return await Task.FromResult(cookies);
+            var result = Tuple.Create<IEnumerable<Cookie>, HttpContent>(cookies, response.Content);
+            return await Task.FromResult(result);
         }
 
         private FinancialInfo ParseFinInfo(string content, DocLinkInfo.LinkTypeEnum linktype, FinInfoCategoria categoria, FinInfoTipo tipo)

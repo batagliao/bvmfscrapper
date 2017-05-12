@@ -154,6 +154,7 @@ namespace bvmfscrapper
             }
 
             int counter = 1;
+
             foreach (var c in companies)
             {
                 bool shouldExtract = true;
