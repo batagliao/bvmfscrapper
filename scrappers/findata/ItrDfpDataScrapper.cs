@@ -60,12 +60,18 @@ namespace bvmfscrapper.scrappers.findata
             if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
                 var map = doc.QuerySelector("map");
-                if (!map.Children.Any(c => c.GetAttribute("alt").Contains("Consolidado")))
+                var consolidados = map.Children.Where(c => c.GetAttribute("alt").Contains("Consolidado"));
+
+                foreach (var item in consolidados.Where(i => i.GetAttribute("alt").Contains("Balanço Patrimonial Consolidado")))
                 {
-                    availableDocs.AtivoConsolidado = false;
-                    availableDocs.PassivoConsolidado = false;
-                    availableDocs.DREConsolidado = false;
-                    Console.WriteLine($"Empresa não possui consolidados de {link.Data.ToString("dd/MM/yyyy")}");
+                    var href = item.GetAttribute("href");
+                    if (href.Contains("Não Apresentado"))
+                    {
+                        availableDocs.AtivoConsolidado = false;
+                        availableDocs.PassivoConsolidado = false;
+                        availableDocs.DREConsolidado = false;
+                        Console.WriteLine($"Empresa não possui consolidados de {link.Data.ToString("dd/MM/yyyy")}");
+                    }
                 }
             }
             else
