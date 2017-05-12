@@ -29,7 +29,7 @@ namespace bvmfscrapper
         {
             string date = link.Data.ToString("yyyyMMdd");
             string file = $"{c.CodigoCVM}.{link.DocType}.{date}.{categoria}.{tipo}.json";
-            string path = $"{Program.FINDATA_DIR}";
+            string path = Path.Combine($"{Program.FINDATA_DIR}", c.CodigoCVM.ToString());
             return Path.Combine(path, file);
         }
 
@@ -37,7 +37,7 @@ namespace bvmfscrapper
         {
             string date = link.Data.ToString("yyyyMMdd");
             string file = $"{c.CodigoCVM}.{link.DocType}.{date}.CapitalConsolidado.json";
-            string path = $"{Program.FINDATA_DIR}";
+            string path = Path.Combine($"{Program.FINDATA_DIR}", c.CodigoCVM.ToString());
             return Path.Combine(path, file);
         }
 
