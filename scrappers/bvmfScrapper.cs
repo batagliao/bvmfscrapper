@@ -94,7 +94,7 @@ namespace bvmfscrapper.scrappers
 
                     bool shouldSave = true;
                     var info = new FileInfo(c.GetFileName());
-                    if(info.Exists && info.CreationTime > c.UltimaAtualizacao)
+                    if(info.Exists && info.LastWriteTime > c.UltimaAtualizacao)
                     {
                         shouldSave = false;
                     }

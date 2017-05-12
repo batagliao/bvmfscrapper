@@ -10,6 +10,7 @@ using System.Xml;
 using System.Reflection;
 using bvmfscrapper.data.repositories;
 using System.Text;
+using System.Globalization;
 
 namespace bvmfscrapper
 {
@@ -42,6 +43,11 @@ namespace bvmfscrapper
         static void Main(string[] args)
         {
 
+            var culture = new CultureInfo("pt-BR");
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentUICulture = culture;
 
             // Configure Windows console
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -156,7 +162,7 @@ namespace bvmfscrapper
                 // ou se o arquivo não existir
 
                 var info = new FileInfo(c.GetLinksFileName());
-                if (info.Exists && info.CreationTime > c.UltimaAtualizacao)
+                if (info.Exists && info.LastWriteTime > c.UltimaAtualizacao)
                 {
                     shouldExtract = false;
                 }

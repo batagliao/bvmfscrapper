@@ -15,7 +15,7 @@ namespace bvmfscrapper.scrappers.findata
 {
     public class ItrDfpDataScrapper
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(ItrDfpDataScrapper));
+        private readonly ILog log = LogManager.GetLogger(typeof(ItrDfpDataScrapper));
 
         public ScrappedCompany Company { get; private set; }
         public IEnumerable<Cookie> CookiesBovespa { get; private set; }
@@ -35,10 +35,10 @@ namespace bvmfscrapper.scrappers.findata
             bool shouldExtract = true;
             // se não existir o arquivo ou
             // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
-            var fileinfo = new FileInfo(Company.GetFinDataFileName(link, FinInfoCategoria.Passivo, tipo));
+            var fileinfo = new FileInfo(Company.GetFinDataFileName(link, categoria, tipo));
             log.Info($"Verificando se é necessário extrair {categoria} {tipo}");
             Console.WriteLine($"Verificando se é necessário extrair {categoria} {tipo}");
-            if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
+            if (fileinfo.Exists && fileinfo.LastWriteTime > link.DataApresentacao)
             {
                 shouldExtract = false;
             }
@@ -200,7 +200,7 @@ namespace bvmfscrapper.scrappers.findata
             // se o arquivo existir mas a data de entrega do arquivo for menor que a data do arquivo
             var fileinfo = new FileInfo(Company.GetFinDataCapitalFileName(link));
             log.Info("Verificando se é necessário extrair Composição do Capital");
-            if (fileinfo.Exists && fileinfo.CreationTime > link.DataApresentacao)
+            if (fileinfo.Exists && fileinfo.LastWriteTime > link.DataApresentacao)
             {
                 shouldExtract = false;
             }
