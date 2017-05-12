@@ -130,6 +130,13 @@ namespace bvmfscrapper.scrappers.findata
             var content = await GetAsync(link, url);
 
             var fininfo = ParseFinInfo(content, link.LinkType, categoria, tipo);
+            if(fininfo == null)
+            {
+                Console.WriteLine($"Empresa {Company.RazaoSocial} não possui dado {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
+                log.Info($"Empresa {Company.RazaoSocial} não possui dado {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
+                return;
+            }
+
             fininfo.Save(fileinfo.FullName);
         }
 
@@ -595,6 +602,17 @@ namespace bvmfscrapper.scrappers.findata
             if (linktype == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
                 var div = doc.QuerySelector("div.ScrollMaker");
+
+                if(div == null)
+                {
+                    var scripts = doc.QuerySelectorAll("script");
+                    if(scripts.Any(s => s.TextContent.Contains("Não Possui Dados para Carregar a Página")))
+                    {
+                        // dado não existe
+                        return null;
+                    }
+                }
+
                 table = div.FirstElementChild as IHtmlTableElement;
                 //table anterior a table é a linha que contém o multiplicador
                 var multiplierText = div.PreviousElementSibling.TextContent;
