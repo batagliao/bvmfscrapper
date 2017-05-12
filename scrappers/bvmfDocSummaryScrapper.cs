@@ -63,8 +63,6 @@ namespace bvmfscrapper.scrappers
 
             var docs = new List<DocLinkInfo>();
 
-            //TODO: guardar a data de envio do documento
-
             // name = key
             // kink = value
             Console.WriteLine($"Obtendo lista de documentos {docType}");

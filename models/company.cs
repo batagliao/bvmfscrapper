@@ -15,21 +15,6 @@ namespace bvmfscrapper.models
         public string RazaoSocial { get; set; }
         public string NomePregao { get; set; }
         public SegmentoEnum Segmento { get; set; }
-        //TODO:
-        /*
-         * (NM) Cia. Novo Mercado
-(N1) Cia. Nível 1 de Governança Corporativa
-(N2) Cia. Nível 2 de Governança Corporativa
-(MA) Cia. Bovespa Mais
-(M2) Cia. Bovespa Mais Nível 2
-(MB) Cia. Balcão Org. Tradicional
-(DR1) BDR Nível 1
-(DR2) BDR Nível 2
-(DR3) BDR Nível 3
-(DRN) BDR Não Patrocinado
-*/
-
-
         public int CodigoCVM { get; set; }
         public string CNPJ { get; set; }
         public string[] AtividadePrincipal { get; set; }
