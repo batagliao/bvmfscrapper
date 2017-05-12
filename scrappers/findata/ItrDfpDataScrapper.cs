@@ -10,6 +10,7 @@ using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using bvmfscrapper.models;
 using log4net;
+using System.Text;
 
 namespace bvmfscrapper.scrappers.findata
 {
@@ -36,7 +37,7 @@ namespace bvmfscrapper.scrappers.findata
             var availableDocs = new AvailableDocs();
 
             string contentstring = "";
-            if(link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
+            if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
                 var tuple = await GetCookiesForBovespaAsync(link);
                 CookiesBovespa = tuple.Item1;
@@ -56,10 +57,10 @@ namespace bvmfscrapper.scrappers.findata
             HtmlParser parser = new HtmlParser();
             var doc = parser.Parse(contentstring);
 
-            if(link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
+            if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
                 var map = doc.QuerySelector("map");
-                if(!map.Children.Any(c => c.TextContent.Contains("Consolidad")))
+                if (!map.Children.Any(c => c.TextContent.Contains("Consolidad")))
                 {
                     availableDocs.AtivoConsolidado = false;
                     availableDocs.PassivoConsolidado = false;
@@ -71,7 +72,7 @@ namespace bvmfscrapper.scrappers.findata
             {
                 var divs = doc.QuerySelectorAll("div.ComboBoxItem_CVM");
                 // se não tem nenhum div com o texto Consolidado/a
-                if(!divs.Any(d => d.TextContent.Contains("Consolidad")))
+                if (!divs.Any(d => d.TextContent.Contains("Consolidad")))
                 {
                     availableDocs.AtivoConsolidado = false;
                     availableDocs.PassivoConsolidado = false;
@@ -309,62 +310,111 @@ namespace bvmfscrapper.scrappers.findata
             ComposicaoCapital capital = new ComposicaoCapital();
             var tds_titles = doc.QuerySelectorAll("td.label");
 
-            var td_multiplicador = tds_titles[0];
-            var td_date = tds_titles[2];
+            var table = tds_titles[0].ParentElement.ParentElement.ParentElement as IHtmlTableElement;
 
-            if (td_multiplicador.TextContent.Contains("Mil") || td_multiplicador.TextContent.Contains("Milhares"))
-            {
-                capital.Multiplicador = 1000;
-            }
-            if (td_multiplicador.TextContent.Contains("Milhão") || td_multiplicador.TextContent.Contains("Milhões"))
-            {
-                capital.Multiplicador = 1000 * 1000;
-            }
-
-            var tr_title = td_multiplicador.ParentElement;
             // walk the rows
 
-            var tr = tr_title.NextElementSibling as IHtmlTableRowElement;
-            if (tr.Cells[0].TextContent.Contains("Integralizado"))
-            {
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
+            //var tr = tr_title.NextElementSibling as IHtmlTableRowElement;
+            //if (tr.Cells[0].TextContent.Contains("Integralizado"))
+            //{
+            //    tr = tr.NextElementSibling as IHtmlTableRowElement;
+            //}
 
-            // Ordinárias mercado
-            if (tr.Cells[0].TextContent.Contains("Ordinárias"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.OrdinariasCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
+            //// Ordinárias mercado
+            //if (tr.Cells[0].TextContent.Contains("Ordinárias"))
+            //{
+            //    var text = tr.Cells[1].TextContent.Trim();
+            //    capital.OrdinariasCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
+            //    tr = tr.NextElementSibling as IHtmlTableRowElement;
+            //}
 
-            // Preferenciais mercado
-            if (tr.Cells[0].TextContent.Contains("Preferenciais"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.PrefernciaisCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
+            //// Preferenciais mercado
+            //if (tr.Cells[0].TextContent.Contains("Preferenciais"))
+            //{
+            //    var text = tr.Cells[1].TextContent.Trim();
+            //    capital.PrefernciaisCirculantes = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
+            //    tr = tr.NextElementSibling as IHtmlTableRowElement;
+            //}
 
-            if (tr.Cells[0].TextContent.Contains("Tesouraria"))
-            {
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
+            //if (tr.Cells[0].TextContent.Contains("Tesouraria"))
+            //{
+            //    tr = tr.NextElementSibling as IHtmlTableRowElement;
+            //}
 
-            // Ordinárias tesouraria
-            if (tr.Cells[0].TextContent.Contains("Ordinárias"))
-            {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.OrdinariasTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                tr = tr.NextElementSibling as IHtmlTableRowElement;
-            }
+            //// Ordinárias tesouraria
+            //if (tr.Cells[0].TextContent.Contains("Ordinárias"))
+            //{
+            //    var text = tr.Cells[1].TextContent.Trim();
+            //    capital.OrdinariasTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
+            //    tr = tr.NextElementSibling as IHtmlTableRowElement;
+            //}
 
-            // Preferenciais tesouraria
-            if (tr.Cells[0].TextContent.Contains("Preferenciais"))
+            //// Preferenciais tesouraria
+            //if (tr.Cells[0].TextContent.Contains("Preferenciais"))
+            //{
+            //    var text = tr.Cells[1].TextContent.Trim();
+            //    capital.PreferenciaisTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
+            //    //tr = tr.NextElementSibling as IHtmlTableRowElement;
+            //}
+            bool tesouraria = false;
+            foreach (var row in table.Rows)
             {
-                var text = tr.Cells[1].TextContent.Trim();
-                capital.PreferenciaisTesouraria = (string.IsNullOrWhiteSpace(text) ? 0 : Convert.ToDecimal(text));
-                //tr = tr.NextElementSibling as IHtmlTableRowElement;
+                if (row.GetAttribute("align") == "left") //primeira linha
+                {
+                    //obtem a data da segunda célula
+                    var td_multiplicador = row.Cells[0];
+                    var td_date = row.Cells[1];
+                    var datetext = td_date.TextContent.Trim();
+                    var iEnd = datetext.LastIndexOfNum();
+                    var start = iEnd - 9;
+                    datetext = datetext.Substring(start, 10);
+                    capital.Date = DateTime.ParseExact(datetext, "dd/MM/yyyy", new CultureInfo("pt-BR"));
+
+                    if (td_multiplicador.TextContent.Contains("Mil") || td_multiplicador.TextContent.Contains("Milhares"))
+                    {
+                        capital.Multiplicador = 1000;
+                    }
+                    if (td_multiplicador.TextContent.Contains("Milhão") || td_multiplicador.TextContent.Contains("Milhões"))
+                    {
+                        capital.Multiplicador = 1000 * 1000;
+                    }
+                }
+                if (row.Cells[0].TextContent.Contains("Capital")) //segunda linha
+                {
+                    // acoes no mercado
+                    tesouraria = false;
+                    continue;
+                }
+                if (row.Cells[0].TextContent.Contains("Tesouraria"))
+                {
+                    // acoes em tesouraria
+                    tesouraria = true;
+                    continue;
+                }
+                if (row.Cells[0].TextContent.Contains("Ordinárias"))
+                {
+                    var value = Convert.ToDecimal(row.Cells[1].TextContent.Trim());
+                    if (tesouraria)
+                    {
+                        capital.OrdinariasTesouraria = value;
+                    }
+                    else
+                    {
+                        capital.OrdinariasCirculantes = value;
+                    }
+                }
+                if (row.Cells[0].TextContent.Contains("Preferenciais"))
+                {
+                    var value = Convert.ToDecimal(row.Cells[1].TextContent.Trim());
+                    if (tesouraria)
+                    {
+                        capital.PreferenciaisTesouraria = value;
+                    }
+                    else
+                    {
+                        capital.PrefernciaisCirculantes = value;
+                    }
+                }
             }
 
             return capital;
@@ -443,7 +493,7 @@ namespace bvmfscrapper.scrappers.findata
             }
             else //cvm
             {
-                if(CookiesCvm == null)
+                if (CookiesCvm == null)
                 {
                     var tuple = await GetCookiesForCvmAsync(link);
                     CookiesCvm = tuple.Item1;
@@ -460,6 +510,13 @@ namespace bvmfscrapper.scrappers.findata
             {
                 log.Info($"Cookie name: {cookie.Name}; value: {cookie.Value}");
                 handler.CookieContainer.Add(new Uri(url), cookie);
+            }
+
+            if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
+            {
+                // bovespa possui encoding "windows-1252"
+                var encoding = Encoding.GetEncoding(1252);
+                return await client.GetStringWithRetryAsync(url, encoding);
             }
 
             return await client.GetStringWithRetryAsync(url);

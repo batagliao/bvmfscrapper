@@ -42,7 +42,20 @@ namespace bvmfscrapper
             retryInterval: TimeSpan.FromSeconds(1),
             retryCount: 3
             );
-        }        
+        }
 
+        public static async Task<string> GetStringWithRetryAsync(this HttpClient client, string url, Encoding encoding)
+        {
+            log.Info($"GET HTTP. URL = {url}");
+
+            return await Retry.Do(async () =>
+            {
+                var bytes = await client.GetByteArrayAsync(url);
+                return encoding.GetString(bytes);
+            },
+            retryInterval: TimeSpan.FromSeconds(1),
+            retryCount: 3
+            );
+        }
     }
 }
