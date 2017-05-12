@@ -60,7 +60,7 @@ namespace bvmfscrapper.scrappers.findata
             if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
             {
                 var map = doc.QuerySelector("map");
-                if (!map.Children.Any(c => c.TextContent.Contains("Consolidad")))
+                if (!map.Children.Any(c => c.GetAttribute("alt").Contains("Consolidado")))
                 {
                     availableDocs.AtivoConsolidado = false;
                     availableDocs.PassivoConsolidado = false;
