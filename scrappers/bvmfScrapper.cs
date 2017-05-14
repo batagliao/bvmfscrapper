@@ -1,4 +1,4 @@
-﻿using bvmfscrapper.models;
+﻿﻿using bvmfscrapper.models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -114,6 +114,8 @@ namespace bvmfscrapper.scrappers
             // retorna somente as empresas que possuam códigos de negociação
             return companies.Where(c => c.CodigosNegociacao != null && c.CodigosNegociacao.Count() > 0).ToList();
         }
+
+
 
         private static List<ScrappedCompany> ParseCompanies(string html)
         {

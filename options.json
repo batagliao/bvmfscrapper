@@ -2,5 +2,6 @@
     "LoadCompanyList": false,
     "UpdateCompaniesIdDb": false,
     "ExtractDocLinks": false,
-    "ExtractFinData": true
+    "ExtractFinData": true,
+    "Company":  80047
 }

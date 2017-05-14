@@ -1,4 +1,4 @@
-﻿using bvmfscrapper.scrappers;
+﻿﻿using bvmfscrapper.scrappers;
 using System;
 using System.Threading.Tasks;
 using System.IO;
@@ -191,7 +191,13 @@ namespace bvmfscrapper
                 companies = ScrappedCompany.LoadCompaniesFromFiles(BASICDATA_DIR);
             }
 
-            foreach (var company in companies)
+            IEnumerable<ScrappedCompany> filtered = companies;
+            // if (Options.Instance.Company > 0)
+            // {
+            //     filtered = companies.Where(c => c.CodigoCVM == Options.Instance.Company);
+            // }
+
+            foreach (var company in filtered)
             {
                 await FinancialDataScrapper.ExtractFinancialInfo(company);
             }

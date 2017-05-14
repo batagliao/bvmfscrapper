@@ -43,7 +43,7 @@ namespace bvmfscrapper.models
 
         public static ScrappedCompany Load(string filename)
         {
-            
+
             string filecontent = File.ReadAllText(filename);
             ScrappedCompany deserialized = JsonConvert.DeserializeObject<ScrappedCompany>(filecontent);
             return deserialized;
@@ -72,13 +72,20 @@ namespace bvmfscrapper.models
 
                 log.Info($"Carregando arquivo {file}");
                 var company = Load(file);
+                if (Options.Instance.Company > 0)
+                {
+                    if (company.CodigoCVM.ToString().CompareTo(Options.Instance.Company.ToString()) < 0)
+                    {
+                        continue;
+                    }
+                }
                 companies.Add(company);
             }
 
             return companies;
         }
 
-        
+
 
     }
 }

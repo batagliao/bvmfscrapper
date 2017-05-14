@@ -77,6 +77,7 @@ namespace bvmfscrapper.scrappers.findata
             else
             {
                 var divs = doc.QuerySelectorAll("div.ComboBoxItem_CVM");
+                
                 // se não tem nenhum div com o texto Consolidado/a
                 if (!divs.Any(d => d.TextContent.Contains("Consolidad")))
                 {
@@ -90,7 +91,41 @@ namespace bvmfscrapper.scrappers.findata
             return availableDocs;
         }
 
-        public async Task ScrapDoc(DocLinkInfo link, FinInfoTipo tipo, FinInfoCategoria categoria)
+        public bool DoINeedToExtractAny(DocLinkInfo link)
+        {
+            // método usado para acelerar a extração
+            if (DoINeedToExtract(link, FinInfoTipo.Individual, FinInfoCategoria.Ativo))
+            {
+                return true;
+            }
+            if (DoINeedToExtract(link, FinInfoTipo.Individual, FinInfoCategoria.Passivo))
+            {
+                return true;
+            }
+            if (DoINeedToExtract(link, FinInfoTipo.Individual, FinInfoCategoria.DRE))
+            {
+                return true;
+            }
+            if (DoINeedToExtract(link, FinInfoTipo.Consolidado, FinInfoCategoria.Ativo))
+            {
+                return true;
+            }
+            if (DoINeedToExtract(link, FinInfoTipo.Consolidado, FinInfoCategoria.Passivo))
+            {
+                return true;
+            }
+            if (DoINeedToExtract(link, FinInfoTipo.Consolidado, FinInfoCategoria.DRE))
+            {
+                return true;
+            }
+            if (DoINeedToExtractComposicaoCapital(link))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private bool DoINeedToExtract(DocLinkInfo link, FinInfoTipo tipo, FinInfoCategoria categoria)
         {
             log.Info($"Obtendo {categoria} {tipo} - {Company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
             Console.WriteLine($"Obtendo {categoria} {tipo} - {Company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
@@ -110,8 +145,18 @@ namespace bvmfscrapper.scrappers.findata
             {
                 Console.WriteLine($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
                 log.Info($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} - {categoria}{tipo}");
-                return;
             }
+
+            return shouldExtract;
+        }
+
+        public async Task ScrapDoc(DocLinkInfo link, FinInfoTipo tipo, FinInfoCategoria categoria)
+        {
+            if (!DoINeedToExtract(link, tipo, categoria))
+                return;
+
+            var fileinfo = new FileInfo(Company.GetFinDataFileName(link, categoria, tipo));
+
 
             var url = "";
             if (categoria == FinInfoCategoria.Ativo)
@@ -130,7 +175,7 @@ namespace bvmfscrapper.scrappers.findata
             var content = await GetAsync(link, url);
 
             var fininfo = ParseFinInfo(content, link.LinkType, categoria, tipo);
-            if(fininfo == null)
+            if (fininfo == null)
             {
                 Console.WriteLine($"Empresa {Company.RazaoSocial} não possui dado {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
                 log.Info($"Empresa {Company.RazaoSocial} não possui dado {link.DocType} {link.Data.ToString("dd/MM/yyyy")} -{categoria} {tipo}");
@@ -260,7 +305,7 @@ namespace bvmfscrapper.scrappers.findata
             return url;
         }
 
-        public async Task ScrapComposicaoCapital(DocLinkInfo link)
+        private bool DoINeedToExtractComposicaoCapital(DocLinkInfo link)
         {
             log.Info($"Obtendo Composição de Capital - {Company.RazaoSocial} - {link.Data.ToString("dd/MM/yyyy")}");
 
@@ -278,12 +323,22 @@ namespace bvmfscrapper.scrappers.findata
             {
                 Console.WriteLine($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} - Capital Consolidado");
                 log.Info($"Empresa {Company.RazaoSocial} não necessita extrair {link.DocType} {link.Data.ToString("dd/MM/yyyy")} - Capital Consolidado");
+            }
+            return shouldExtract;
+        }
+
+        public async Task ScrapComposicaoCapital(DocLinkInfo link)
+        {
+            if (!DoINeedToExtractComposicaoCapital(link))
+            {
                 return;
             }
 
+            var fileinfo = new FileInfo(Company.GetFinDataCapitalFileName(link));
+
             var url = "";
             if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
-            {
+            {                
                 url = "http://www2.bmfbovespa.com.br/dxw/FormDetalheDXWG1CompCapital.asp";
             }
             else //cvm
@@ -304,8 +359,8 @@ namespace bvmfscrapper.scrappers.findata
 
             ComposicaoCapital capital = null;
             if (link.LinkType == DocLinkInfo.LinkTypeEnum.Bovespa)
-            {
-                capital = ParseComposicaoCapitalBovespa(content);
+            {                
+                capital = ParseComposicaoCapitalBovespa(content);                
             }
             else //cvm
             {
@@ -322,7 +377,7 @@ namespace bvmfscrapper.scrappers.findata
 
             ComposicaoCapital capital = new ComposicaoCapital();
             var tds_titles = doc.QuerySelectorAll("td.label");
-
+            
             var table = tds_titles[0].ParentElement.ParentElement.ParentElement as IHtmlTableElement;
 
             // walk the rows
@@ -603,10 +658,10 @@ namespace bvmfscrapper.scrappers.findata
             {
                 var div = doc.QuerySelector("div.ScrollMaker");
 
-                if(div == null)
+                if (div == null)
                 {
                     var scripts = doc.QuerySelectorAll("script");
-                    if(scripts.Any(s => s.TextContent.Contains("Não Possui Dados para Carregar a Página")))
+                    if (scripts.Any(s => s.TextContent.Contains("Não Possui Dados para Carregar a Página")))
                     {
                         // dado não existe
                         return null;
@@ -622,7 +677,7 @@ namespace bvmfscrapper.scrappers.findata
                 }
             }
             else //cvm
-            {
+            {                
                 var title = doc.QuerySelector("#TituloTabelaSemBorda");
                 if (title.TextContent.Contains("Reais Mil"))
                 {
@@ -630,6 +685,12 @@ namespace bvmfscrapper.scrappers.findata
                 }
 
                 table = title.NextElementSibling as IHtmlTableElement;
+
+                if(table.InnerHtml.Contains("Justificativa para a não prestação da informação"))
+                {
+                    // dado não existe
+                    return null;
+                }
             }
 
             foreach (var row in table.Rows)

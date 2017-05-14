@@ -20,7 +20,7 @@ namespace bvmfscrapper.scrappers
         {
             // load links
             var links = LoadLinks(company);
-            if(links == null)
+            if (links == null)
             {
                 await Task.FromResult<object>(null);
             }
@@ -31,9 +31,15 @@ namespace bvmfscrapper.scrappers
             var itrs = links[DocInfoType.ITR];
             itrs = RemoveDuplicates(itrs);
 
-            foreach(var itr in itrs)
+            foreach (var itr in itrs)
             {
                 var scrapper = new ItrDfpDataScrapper(company);
+
+                if (!scrapper.DoINeedToExtractAny(itr))
+                {
+                    continue;
+                }
+
                 var docs = await scrapper.GetAvailableDocs(itr);
                 if (docs.ComposicaoCapital)
                 {
@@ -92,7 +98,7 @@ namespace bvmfscrapper.scrappers
             // verifica os grupos para encontrar os duplicados e remove o mais antigo da lista principal
             foreach (var group in groups)
             {
-                if(group.Count() > 1)
+                if (group.Count() > 1)
                 {
                     var itemPermanece = group.MaxBy(g => g.DataApresentacao);
                     filteredLinks.Add(itemPermanece);
@@ -108,7 +114,7 @@ namespace bvmfscrapper.scrappers
         private static Dictionary<DocInfoType, List<DocLinkInfo>> LoadLinks(ScrappedCompany company)
         {
             var file = company.GetLinksFileName();
-            if(!File.Exists(file))
+            if (!File.Exists(file))
             {
                 Console.WriteLine($"arquivo de links da empresa {company.RazaoSocial} não existe");
                 log.Error($"arquivo de links da empresa {company.RazaoSocial} não existe");

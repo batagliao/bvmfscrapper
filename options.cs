@@ -29,5 +29,6 @@ namespace bvmfscrapper
         public bool UpdateCompaniesIdDb { get; set; } = true;
         public bool ExtractDocLinks { get; set; } = true;
         public bool ExtractFinData { get; set; } = true;
+        public int Company { get; set; } = 0;
     }
 }
